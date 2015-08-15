@@ -1,0 +1,32 @@
+Relational Algebra Operators are used in relations:
+	.Filter
+	.Slice
+	.Combine
+The Operators are :
+	. Select Operator selects some rows based on conditions denoted by sigma
+	. Project Operator selects required columns denoted by Pi.
+	. Cross product operator for combining every possible pair of tuples between relations
+	. natural join is a join where same columns in two relations are equal. denoted using bow-tie.
+	. Theta Join is a join between  two relations (cross product) and combine them by keeping the tuples that match the theta join condition.
+ 		denoted with bow-tie with theta symbol.	
+	. Union combines the tuples of a relation vertically as opposed to horizontally as in a join, between relations of same schema.
+	. Difference only projects the differences btween similar schemas.
+	. Intersection is to bring out common tuples between similar schemas. similar to intersections in venn diagrams.
+	. Rename is used to give a name to a selection of attributes. Primarily used to avoid dis-ambiguation in self-joins or huge queries. The selection is substituted for by the renamed selection.
+
+Also, 
+	. Linear Algebra is based on set model(no duplicates allowed).
+	. SQL is based on multi-set model(duplicates allowed).
+	. SQL is basically an un-ordered model.
+	. Project operator in relation algebra(RA) acts like a filter
+	. Syntax in RA: Project(Select (condition) Condition )
+	. Cartesian product on two relations(tables) results in combined number of attributes and the rows are multiplied (n X m).
+	. in RA,rows are tuples and columns are attributes.
+	. in RA a simplest query is the name of the relation.
+	. in DB, the joins are theta joins
+=========================================================================================
+
+.	Union in SQL by default eliminates duplicates. So, Union is a set operator. But 'Union All' is a multi-set operator and hence duplicates are seen in the resulting result set.
+.	SQL primarily has Union (as in RA), Intersect (as in RA, but some dbs dont support 'intersect' keyword) and except(difference in RA) 
+
+. in sql, multiple order by is separated by comma.

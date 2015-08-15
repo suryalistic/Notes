@@ -1,0 +1,59 @@
+Data Structures:
+	*one really important thing when implementing a datastructure with array is the stack overflow error
+
+	.Stack-LIFO
+	.Queue-FIFO
+	The two basic data structures differ in the way items are removed out of them.
+	
+	Stack:
+		. we study two datastructure impl. linked list and resizing array. 
+		. push, pop, isEmpty
+		. insert and delete at the top. so top  is the only pointer.
+		. use linked list to implement basic stack(lookup code for this)
+		. throw two exceptions :
+				underflow: no items to pop
+				overflow : more items than stack can hold(fix: resize the array)
+				in Java implementation: avoid loitering i.e prevent item from being garbage collected by holding a reference to it. can be avoided by setting the reference to Null after pop.		
+		. Array implementation has two challenges:
+			. Increasing the size of the array when pushing reaches the limit of existing array. to not make it N^2 operation, just double the size of the array when push reaches the limit.
+			. Decreasing the size of the array when popping. halve the array size when the number of elements is N/4.
+	Queue:
+		.Enqueue, De-queue, isEmpty
+		. enqueue at the end, dequeue at the beginning. so two pointers.
+	
+	Generics:
+		.Java does not support generics in Array. 
+			private Item[] items;
+				public void someMethod(){
+					items = new Item[10]; //illegal
+				}
+				
+			private Item[] items;
+				public void someMethod(){
+				items = (Item[])new Object[10]; // legal
+				}
+	Bag:
+		.A datastructure where we add items and provide iterator with no order
+		. A stack equivalent of bag is regular stack without the pop or a queue implementation without a dequeue.
+	
+	**** Dijkstra's two stack algorithm to solve arithmetic expressions is a perfect example of good usage of stacks****
+	
+	Priority Queue using Binary Heap:
+		*	a heap is a specialized tree-based data structure that satisfies the heap property: If A is a parent node of B 
+			then the key of node A is ordered with respect to the key of node B with the same ordering applying across the heap.
+			Either the keys of parent nodes are always greater than or equal to those of the children and the highest key is in 
+			the root node (this kind of heap is called max heap) or the keys of parent nodes are less than or equal to those of 
+			the children and the lowest key is in the root node (min heap).
+		*	a priority queue is an abstract data type which is like a regular queue or stack data structure, but where additionally
+			each element has a "priority" associated with it. In a priority queue, an element with high priority is served before an 
+			element with low priority. If two elements have the same priority, they are served according to their order in the queue. A priority queue is not a heap.
+		.Complete Binary tree is the Binary Tree structure where all  the nodes have two children nodes()
+		.Using array to implement Binary tree. Root starts at a[1]
+		.index of parent node for a node at k is k/2
+		.children nodes of node at k are 2k and 2k+1
+		.To fix violation where child < parent, replace the child node with the parent till there is incompetence(also called peter principle or swim operation)
+		.depth of Binary tree is lgN.
+		.to insert, insert at the end and apply swim (takes 1+lgN)
+		.To fix violation where parent < child use sink operation.
+		.To Delete or get max value , exchange the root(which is always max) with the last element and return . Run sink to re-org the tree(coz the last(least) element is at the top.).
+		

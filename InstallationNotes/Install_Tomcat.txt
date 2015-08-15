@@ -1,0 +1,8 @@
+Download apache tomcat.
+unzip, tar -xvf,  and mv to /usr/share
+
+create link using: sudo ln -s /usr/share/apache-tomcat-7.0.34 /Library/Tomcat
+Change ownership of the /Library/Tomcat folder hierarchy: sudo chown -R <your_username> /Library/Tomcat
+Make all scripts executable: sudo chmod +x /Library/Tomcat/bin/*.sh
+
+to help start & stop use TomcatController from : http://www.activata.co.uk/products/    ... change the preferences tomcat install folder

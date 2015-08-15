@@ -1,0 +1,103 @@
+. Non-Relational JSON data store
+. NoSQL (Not Only SQl)
+. Does not support Joins, Transactions, SQL 
+
+
+
+bson spec for type of data
+libprce for regexes in mongo
+
+$gt
+$gte
+$lt
+$lte
+$regex
+$type
+$exists
+$in
+$all
+$or
+$and
+db.collection.count() -> similar syntax to find
+update-> two parameters atleast : first is where clause similar to find and second the wholesale replace to other fields apart from _id
+ $set used with update to add or update a property
+ $inc to add value to the property in update
+ $unset to remove property from document
+ $push, $pop, $pull, $pushAll, $pullAll, $addToSet
+ 
+ Performance:
+ improved using . indexing
+ 				. sharding
+ .pluggable storage engines introd in mongo 3.0 . is interface bet'n mongo prgraming driver to the disk.
+ . two storage engines shipped: MMAP, Wired tiger.
+ MMAPv1 -> OS does swapping, built on top of MMAP, has Collection level locking, uses power of two to allocate space eg: if storing 3 byte - allocates 4 bytes, if 9 - 16 bytes , if 19 - 32 bytes. MMAPv1 is turned on by default, does inline editing rather than create new space.
+ Wired Tiger: not by default, turned on while startup on mongod with -StorageEngine wiredTiger, manages own memory and swaps, document level locking, no inline editing, faster than MMAPv1.
+
+Indexes:
+Andrew mentions that while reads are much faster with indexes, writes to a document will happen slower. This is true, but it's worth noting a caveat here: combination operations, such as update and deletion operations, where you find the document you want and then perform a write, will benefit from the index when you're performing the query stage, and then may be slowed by the index when you perform the write. Usually you're still better off having an index, but there are some special cases where this may not be true.
+
+He mentions that indexes in mongodb are in btrees. This is true for MMAP (and therefore for MongoDB prior to 3.0), but it does depend on your storage engine. For example, when you are using WiredTiger, as of MongoDB 3.0, indexes are implemented in b+trees. Again, you can find details in Wikipedia (links provided here for your convenience).
+
+Index is an ordered set of column values on which the index is put and has a pointer to the actual record.
+eg: (a,b,c) index, right way of querying using index: a, a,b, a,b,c . only b or only c or only b,c doesnt help. 
+writes are slow with indexing.
+db.[collectionName].createIndex({name:1 or -1})
+db.[collectionName].dropIndex({name:1 or -1 (same as what you gave while creating it)} )
+db.[collectionName].getIndexes()
+create Index for array:
+db.[collectionName].createIndex({"arrayelementName.elementName":1 or -1})
+create unique index with addicitonal param to createIndex unique:true
+Multikey Index: when index is being created on an array. compound index( two or more keys) can be created with one index as array. mongodb creates index points on each value of shell and incase of compound key it creates key point for each of array element with one of the regular key. compound keys with multi array elements is not alowd.
+
+. use $elemMatch for writing queryon elements of array.
+.sparse:true option is used when creating index with elements missing from collection. this occupies less space than sparse:false index thus more flexible. but this index is not considered bby the db when trying to sort.
+.create index basckground vs foreground:  
+	background: slower, only the shell being used to create index is blocked, we can use other shells to query, not by default.
+	foreground: faster than background, the whole db is blocked. default.
+.use explain with executionstats, allplanexecution to get more details about the path taken by query. Query planner is the default option of explain.
+
+Covered Queries: all elements selected are in or subset of index.
+
+Geospatial Index:
+ensureIndex now replaced with createIndex.
+for 2d location [x,y] location. createIndex with 2d and has $near find filter with sort.
+mongo takes [longitude, latitude] format. look at geojson
+Geospatial Index:
+eg query:
+db.stores.find(
+{
+"loc":{$near:{
+$geometry:{
+    "type":"Point",
+    "coordinates":[-130, 39],
+},
+$maxDistance:1000000
+}
+
+}
+}
+)
+Text Search Index:
+use text score meta param in find to find the closest match first. returns all the sentences with the words in the search.
+Indexes Performance:
+use hint to specify whih index to use to examine less keys to get to a result.
+selectivity (ability to narrow down result set) is the key to determine how effeciently an index can be used.
+Selectivity is the primary factor that determines how efficiently an index can be used. Ideally, the index enables us to select only those records required to complete the result set, without the need to scan a substantially larger number of index keys (or documents) in order to complete the query. Selectivity determines how many records any subsequent operations must work with. Fewer records means less execution time.
+
+In general, which of the following rules of thumb should you keep in mind when building compound indexes? Check all that apply. For this question, use the following definitions: 
+equality field: field on which queries will perform an equality test
+sort field: field on which queries will specify a sort
+range field: field on which queries perform a range test
+
+equality , sort and range in that order
+
+Profiling:
+three levels: 0 -> off
+			  1 -> log all slow queries
+			  2 -> all queries
+db.system.profile.find();
+eg: db.system.profile.find({millis:{$gt:1000}}).sort({ts:-1})	
+
+
+
+

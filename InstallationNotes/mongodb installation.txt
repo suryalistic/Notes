@@ -1,0 +1,180 @@
+MongoDB: First Steps: Installation, Configuration and Authentication
+
+MongoDB is one of the more popular NoSQL databases available. NoSQL databases do not use typical relational database structure, nor do they typically rely on SQL for queries. MongoDB stores data in JSON-style documents (which themselves can be stored within collections) and allows for dynamic storage of data. For example, we do not need to create a schema, configure relations between tables, and so on. We just create our database and populate it with data on the fly. The data can be as complex or as simple (just key/value pairs) as our requirements dictate. MongoDB is also highly-scalable via the use of shard-based clustering.
+
+I am a strict wearer of an RDBMS hat, and this is my first foray into the world of NoSQL. This first article on MongoDB will cover initial installation, configuration and testing. I’ll also dabble with authentication. Further articles will cover the configuration of replica sets and other administrative features. I’m a sysadmin, not a developer, so I’ll be looking more at how to administer MongoDB rather than how to actually use it.
+
+Let’s get on with the installation.
+
+
+Installation
+
+Whilst source code is provided, it is far simpler to download the appropriate MongoDB distribution for your operating system and architecture. From the downloads page, I fetched the latest version (2.2.3 at time of writing) for Linux 64-bit. I downloaded, as always, to /usr/local/src.
+Installation is as simple as uncompressing/untarring and creating a symlink:
+
+# cd /usr/local
+# tar xzf src/mongodb-linux-x86_64-2.2.3.tgz
+# ln -s /usr/local/mongodb-linux-x86_64-2.2.3 /usr/local/mongodb
+
+Next, create a group and user to run MongoDB as. I don’t like applications charging around as root without good reason, especially applications that I am unfamiliar with:
+
+# groupadd -g 1234 mongodb
+# useradd -m -d /home/mongodb -s /bin/bash -g mongodb -u 1234 mongodb
+# passwd mongodb
+Finally, create a directory for MongoDB data, a directory for logs, and apply the appropriate ownership over all related directories:
+
+# mkdir /var/lib/mongodb /var/log/mongodb
+# chown -R mongodb:mongodb /usr/local/mongodb-linux-x86_64-2.2.3 /var/lib/mongodb /var/log/mongodb
+Installation was easy enough. Now we can configure MongoDB.
+
+Configuration
+
+Create a configuration file at /etc/mongodb.conf as follows:
+
+# vi /etc/mongodb.conf
+fork = true
+bind_ip = 0.0.0.0
+port = 1234
+quiet = true
+dbpath = /var/lib/mongodb
+logpath = /var/log/mongodb/mongod.log
+logappend = true
+journal = true
+Let’s step through these configuration items.
+
+fork – This has been set to true to enable mongod to run as a daemon.
+
+bind_ip – Which IP address(es) mongod should bind to. I specified 0.0.0.0, which is the default, but I prefer to be explicit within configuration files even if it is to specify the default.
+
+port – Which port mongod should bind to. I specified an unused port on my server – 1234.
+
+quiet – I set this to true, so that only critical events and errors are logged.
+
+logpath – The path to the log file to which mongod should write its log messages.
+
+logappend – I set this to true so that the log is not overwritten upon restart of mongod.
+
+journal – I set this to true as it’s a GoodThing(TM). It ensures write durability and data consistency much as any journaling scheme would be expected to do. Only set this to false if you don’t really care about your data (or more so, the loss of it).
+
+With the configuration in place, we can start the MongoDB daemon (mongod) for the first time.
+
+Starting the Daemon
+
+Let’s start up mongod as the mongodb user we created previously:
+
+# su - mongodb
+$ cd /usr/local/mongodb/bin
+$ ./mongod --config /etc/mongodb.conf
+warning: bind_ip of 0.0.0.0 is unnecessary; listens on all ips by default
+forked process: 1496
+all output going to: /var/log/mongodb/mongod.log
+child process started successfully, parent exiting
+We can see that our explicit declaration of 0.0.0.0 is unnecessary, but I don’t care. We also see the daemon PID and a few other messages. We can now use the MongoDB shell (mongo) to connect to the database and test things out.
+
+You should also take this opportunity to write the appropriate control script (SMF/upstart/init.d, depending upon your operating system).
+
+Testing it Out
+
+Let’s connect to our mongod instance:
+
+$ cd /usr/local/mongodb/bin
+$ ./mongo --port 1234
+MongoDB shell version: 2.2.3
+connecting to: 127.0.0.1:1234/test
+Welcome to the MongoDB shell.
+For interactive help, type "help".
+For more comprehensive documentation, see
+        http://docs.mongodb.org/
+Questions? Try the support group
+        http://groups.google.com/group/mongodb-user
+>
+As you can see, when you first connect, you’ll connect to the test database by default. You can use the db command to show which database you’re currently using, and the use command to select another database. If the database doesn’t exist, it’ll be created. Observe:
+
+> db
+test
+> use mynewdb
+switched to db mynewdb
+We now have a new database called mynewdb. Next, I’ll create a document called j and insert it into a collection called stuff. I can then search the collection using the find() method and lo-and-behold the document is returned:
+
+> j = { name: "testing" }
+{ "name" : "testing" }
+> db.stuff.insert( j )
+> db.stuff.find()
+{ "_id" : ObjectId("5132a57854c8e5f556fbd027"), "name" : "testing" }
+It looks like our MongoDB installation is doing exactly what it is supposed to.
+
+Shutting Down
+
+To shutdown mongod, use the mongo shell to connect to the instance, and use the admin database. The admin database is a special database used for administering MongoDB. Using the shutdownServer() method will shut the server down. The error messages are obviously the result of mongod being down, and are expected. quit() will quit the mongo shell:
+
+> use admin
+switched to db admin
+> db.shutdownServer()
+Sun Mar  3 12:23:13 DBClientCursor::init call() failed
+Sun Mar  3 12:23:13 query failed : admin.$cmd { shutdown: 1.0 } to: 127.0.0.1:1234
+server should be down...
+Sun Mar  3 12:23:13 trying reconnect to 127.0.0.1:1234
+Sun Mar  3 12:23:13 reconnect 127.0.0.1:1234 failed couldn't connect to server 127.0.0.1:1234
+> quit()
+$ ps -ef | grep '[m]ongo'
+$
+Excellent. We now know how to install, (basically) configure and shutdown MongoDB. You’ve probably noticed that we’ve not been prompted for any credentials as of yet. By default, connections require authentication when connecting from anywhere other than localhost. We need to add a user so that we can authenticate and connect to our servers public IP address.
+
+Configuration of Authentication
+
+Add the following line to /etc/mongodb.conf
+auth = true
+and restart mongod:
+
+$ cd /usr/local/mongodb/bin
+$ ./mongod --config /etc/mongodb.conf
+Once running, attempt a find() in our stuff collection via the public interface (where mongod is also listening):
+
+$ ./mongo --port 1234 --host 172.16.18.169
+...
+> use mynewdb
+switched to db mynewdb
+> db.stuff.find()
+error: {
+        "$err" : "unauthorized db:mynewdb ns:mynewdb.stuff lock type:1 client:172.16.18.169",
+        "code" : 10057
+}
+Good – we are denied access. Not very useful for our application though. Let’s configure authentication. Connect again via localhost (where authentication is not required). Use mynewdb, and then add a user via db.addUser( username, password ) as follows:
+
+
+$ ./mongo --port 1234 --host 127.0.0.1
+MongoDB shell version: 2.2.3
+connecting to: 127.0.0.1:1234/test
+> use mynewdb
+switched to db mynewdb
+> db.addUser( "testuser", "testpass" )
+{
+        "user" : "testuser",
+        "readOnly" : false,
+        "pwd" : "19c8747ac7b3654045c99bea032d61be",
+        "_id" : ObjectId("5132a7606d5cc7ee45c52877")
+}
+Now, reconnect via the mongo shell to the public interface of the server, and attempt a find() again on the collection:
+
+
+$ ./mongo --port 1234 --host 172.16.18.169
+MongoDB shell version: 2.2.3
+connecting to: 172.16.18.169:1234/test
+> use mynewdb
+switched to db mynewdb
+> db.stuff.find()
+error: {
+        "$err" : "unauthorized db:mynewdb ns:mynewdb.stuff lock type:0 client:172.16.18.169",
+        "code" : 10057
+}
+Uh-oh! But that’s expected. Let’s now use db.auth() to authenticate using our newly created testuser credentials, and try the find() again:
+
+> db.auth( "testuser", "testpass" )
+1
+> db.stuff.find()
+{ "_id" : ObjectId("5132a57854c8e5f556fbd027"), "name" : "testing" }
+Much better – our object is returned!
+
+Conclusion
+
+This has been my first hands-on experience with a NoSQL database, and from my intial experiments it all seems rather straightforward. Later articles will cover the configuration of replica sets, as well as pulling statistics and other operational metrics out of MongoDB. As explained earlier, these articles will cover MongoDB from an administrative/operational standpoint rather than the persepctive of a developer.

@@ -1,0 +1,86 @@
+1. Download latest stable version of virtual box : https://www.virtualbox.org/ and install 
+	(installation for mac, windows, linux)
+2. Download latest stable version of Kubuntu iso file(64 bit) from :http://www.kubuntu.org/getkubuntu
+Add a new VirtualVm instance:
+1. Open the virtual box manager : New
+2. Give a name for your VM instance, select type from the dropdown=Linux, version=Ubuntu 64 bit.
+3. Memory size: atleast 2GB. 4GB if you have memory to spare.
+4. Hard drive: select Create Virtual Hard drive now. Hard drive file type = VDI. 
+	select dynamically allocated if you have lot of HD space to spare or select Fixed size. Give atleast 10GB
+5. Select the VM you just created, go to settings -> Storage -> Controller IDE and click on the CD symbol with Empty written next to it.
+6. In the Right hand side you see Attributes. select the CD Symbol next to it. select the "Choose the Virtual CD/DVD disk file".
+7. point to the Kubuntu ISO file downloaded in step2.
+
+
+
+Installation of Java
+Uninstall Open-jdk:
+	sudo apt-get autoremove openjdk-7-jre
+	sudo apt-get autoremove openjdk-7-jre
+	verify : java -version
+Install Oracle jdk:
+	Method1:
+		sudo add-apt-repository ppa:webupd8team/java
+		sudo apt-get update
+		sudo apt-get install oracle-java8-installer
+		sudo apt-get install oracle-java8-set-default
+	Method2:
+		Download binary file which has tar.gz:
+		tar -xvf jdk-8-linux-xxx.tar.gz
+		sudo mkdir -p /usr/lib/jvm
+		sudo mv ./jdk1.8.0 /usr/lib/jvm/
+		sudo update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jvm/jdk1.8.0/bin/java" 1
+		sudo update-alternatives --install "/usr/bin/javac" "javac" "/usr/lib/jvm/jdk1.8.0/bin/javac" 1
+		sudo update-alternatives --install "/usr/bin/javaws" "javaws" "/usr/lib/jvm/jdk1.8.0/bin/javaws" 1
+		
+		Correct the file ownership and the permissions of the executables:
+		sudo chmod a+x /usr/bin/java
+		sudo chmod a+x /usr/bin/javac
+		sudo chmod a+x /usr/bin/javaws
+		sudo chown -R root:root /usr/lib/jvm/jdk1.8.0
+		
+		sudo update-alternatives --config java
+		There are 3 choices for the alternative java (providing /usr/bin/java).
+
+		Selection    Path                                            Priority   Status
+		------------------------------------------------------------
+	  	0            /usr/lib/jvm/java-7-openjdk-amd64/jre/bin/java   1071      auto mode
+  		1            /usr/lib/jvm/java-7-openjdk-amd64/jre/bin/java   1071      manual mode
+	  * 2            /usr/lib/jvm/jdk1.7.0/bin/java                   1         manual mode
+  		3            /usr/lib/jvm/jdk1.8.0/bin/java                   1         manual mode
+
+		Press enter to keep the current choice[*], or type selection number: 3
+		update-alternatives: using /usr/lib/jvm/jdk1.8.0/bin/java to provide /usr/bin/java (java) in manual mode
+		
+		sudo update-alternatives --config javac
+		sudo update-alternatives --config javaws
+		
+		If you want to enable the Mozilla Firefox plugin:
+
+		32 bit:
+		ln -s /usr/lib/jvm/jdk1.8.0/jre/lib/i386/libnpjp2.so ~/.mozilla/plugins/
+
+		64 bit:
+		ln -s /usr/lib/jvm/jdk1.8.0/jre/lib/amd64/libnpjp2.so ~/.mozilla/plugins/
+		N.B.: You can link the plugin (libnpjp2.so) to /usr/lib/firefox/plugins/ for a system-wide installation 								(/usr/lib/firefox-addons/plugins from 15.04 onwards). For Ubuntu 13.10, the path to the plugin directory is /usr/lib/firefox/browser/plugins/.
+
+		Depending on your configuration, you might need to update the apparmor profile for Firefox (or other browsers) in /etc/apparmor.d/abstractions/ubuntu-browsers.d/java:
+
+		# Replace the two lines:
+		#  /usr/lib/jvm/java-*-sun-1.*/jre/bin/java{,_vm} cx -> browser_java,
+		#  /usr/lib/jvm/java-*-sun-1.*/jre/lib/*/libnp*.so cx -> browser_java,
+		# with those (or adapt to your new jdk folder name)
+		/usr/lib/jvm/jdk*/jre/bin/java{,_vm} cx -> browser_java,
+		/usr/lib/jvm/jdk*/jre/lib/*/libnp*.so cx -> browser_java,
+		Then restart apparmor:
+		sudo /etc/init.d/apparmor restart
+
+
+
+Install Flashplayer:
+	For 14.10 version
+	sudo apt-get install flashplugin-installer
+	(Older Versions)
+	sudo add-apt-repository ppa:nilarimogard/webupd8
+	sudo apt-get update
+	sudo apt-get install freshplayerplugin

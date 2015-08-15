@@ -1,0 +1,19 @@
+Intro to Finance:
+.Finance is the study of value.
+.Value is changed due to Time and Uncertainty.
+
+Time value of Money:
+.every decision involves time and uncertainty.
+Important parameters:
+.PV = Present value
+.FV = Future Value
+.number of periods
+.rate of interest
+.
+
+
+
+
+Books:
+.Theory of Interest by Irwing Fisher
+ 

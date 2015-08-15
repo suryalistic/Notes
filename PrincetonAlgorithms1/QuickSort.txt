@@ -1,0 +1,12 @@
+Quick Sort:
+		.Random Shuffle of array.
+	To partition 
+		. select a position j such that a[j] in the array is in place,  no element left to 
+	   		a[j] greater than and no element right to a[j] lesser than a[j].
+	   	. sort each piece recursively.
+	   	. O(nlogn) - Average running time
+	   	. O(n2) - worst case.
+	   	. inplace - does not take extra place for sorting.
+	   	. it is important to shuffle before we partition to ensure performance.
+	   	. similar to merge sort, if the array to be sorted is less than a cut-off, better to go with insertion sort.
+	   	. 3-way quick sort is used to speeden Quick in case of duplicate attributes.

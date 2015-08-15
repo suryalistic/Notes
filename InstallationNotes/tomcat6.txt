@@ -1,0 +1,34 @@
+important folder in tomcat6:
+
+/etc/tomcat6/
+/usr/share/tomcat6
+/usr/share/tomcat6-root/
+/usr/share/doc/tomcat6
+/var/cache/tomcat6
+/var/lib/tomcat6
+/var/log/tomcat6
+
+
+apache2 to tomcat6:
+
+1. Edit /etc/apache2/sites-available/default to be something like the following:
+<virtualhost *:80="">
+   ServerName localhost
+   ErrorLog /var/log/apache2/ajp.error.log
+   CustomLog /var/log/apache2/ajp.log combined
+ 
+   <proxy *="">
+     AddDefaultCharset Off
+     Order deny,allow
+     Allow from all
+   </proxy>
+ 
+   ProxyPass / ajp://localhost:8009/
+   ProxyPassReverse / ajp://localhost:8009/
+ 
+</virtualhost>
+
+2.sudo a2ensite default
+3.sudo a2enmod proxy_ajp
+4.sudo /etc/init.d/apache2 restart
+

@@ -1,0 +1,12 @@
+Change Tomcat Default Browser title icon:
+1) If facivon.ico is changed in
+Catelina Home/Webapps/ROOT then all web apps will show this image
+url to root-
+apache-tomcat-x.x.xx/webapps/ROOT
+2) To change icon of each application specify following in head section
+< link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" > 
+
+============
+
+see/hide hidden files mac
+defaults write com.apple.Finder AppleShowAllFiles YES| NO

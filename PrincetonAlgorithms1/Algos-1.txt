@@ -1,0 +1,95 @@
+Union Find:
+	Find connection(path) between nodes. 
+	is connected to (equivalence):
+		Reflexive p -> p 
+		Symmetric p -> q then q -> p
+		Transitive p -> q and q -> r then p -> r
+	Quick FInd: elements are connected iff they have the same iD
+	Union: elements are joined by giving them the same id.
+	Avoid the insidious bug in the intuitive approach to Union algorithm.
+	Quick Union: elements are connected iff they have the same root.
+	WQUPC: Weighted Quick Union Path Compression.
+	Union-Find algorithm is practically used to find percolation(connected from top to bottom)
+	Find in Quick-Union is expensive, coz need to find the root of each element whose equality is being tested
+	Union in Quick-Find is expensive coz in worst case scenarios, need to change the ids of all involved elements.
+	Weighted Quick-Union: To avoid trees getting longer and leaner which would lead to more number of operations in find.
+	 					  When union-ing Two tree components, get the longer(larger) tree's root and set it to shorter tree.
+	 					  For this, keep track the number of individual nodes in the tree possibly as meta-data of root.
+	 					  The depth of any node in weighted Quick Union tree is log-base2(Size of the total number of elements)
+———————————————————————————————————————————————————————————
+Analysis of Algorithms is important to reduce performance bugs.
+	.Analysis of programs and their running time was important from the time of charles babbage, 
+	coz he had to turn the crank for computations(analogous to modern day CPU cycles).
+Simplification of analysis:
+	. In the analysis of algorithms, according to turing, the priority is to calculate the most complex operations.
+	. IN tilde(~) notation, for large values of N , ignore the lower order of N.
+	.use calculus integrals to calculate the sigmas.
+	.exact mathematical models are not a necessity, approximate models work fine in estimations.
+Cost of operation:
+	. Mathematical models video.
+	
+Complexity of Binary Search Algorithm:
+
+	.Here a more mathematical way of seeing it, though not really complicated. IMO much clearer as informal ones:
+    The question is, how many times can you divide N by 2 until you have 1? This is essentially saying, do a binary search (half the elements) 
+	until you found it. In a formula this would be this:
+	1 = N / 2x
+	multiply by 2x:
+	2x = N
+	now do the log2:
+	log2(2x)    = log2 N
+	x * log2(2) = log2 N
+	x * 1         = log2 N
+
+	this means you can divide log N times until you have everything divided. 
+	Which means you have to divide log N ("do the binary search step") 
+	until you found your element.
+
+	.It doesn't half search time, that wouldn't make it log(n). It decreases it logarithmicly. 
+	Think about this for a moment. If you had 128 entries in a table and had to search linearly for your value, 
+	it would probably take around 64 entries on average to find your value. That's n/2 or linear time. 
+	With a binary search, you eliminate 1/2 the possible entries each iteration, 
+	such that at most it would only take 7 compares to find your value (log base 2 of 128 is 7 or 2 to the 7 power is 128.) 
+	This is the power of binary search.
+	.It is also accepted that the x is equal to lg(N)+1, the 1 is for the way we compare the middle element.
+	
+Theory of Algorithms:
+	.Big Omega, Big Oh are the lower and upper bounds of running times(complexity), Optimal solution is the Big Theta notation.
+	.Big Oh notation is not the approximation of the complexity, tilda notation is.
+	
+Memory analysis of algorithms:
+	.mega byte = 2^20
+	.giga byte = 2^30
+	.32 bit machines had 4 memory pointers.
+	.64 bit machines have 8 memory pointers.
+	.pointers consume more memory. so programs on 64 bit systems occupy more memory than 32 bit.
+	.Overheads:
+		Array:24 bytes
+		Object: 16 bytes+ 8bytes for reference+ 8bytes for padding = 32 bytes
+		String: 2N+64 (2N+24 for char array + 16bytes for Object overhead + 8 for reference+ 4 for offset + 4 for count + 4 for hash + 4 for padding)
+	.Typical Memory Usage by various data types in bytes:
+		.boolean 	 : 1
+		.char		 : 2	
+		.int		 : 4
+		.float		 : 4
+		.long		 : 8
+		.double		 : 8
+		.char array	 : 2N+24
+		.int array	 : 4N+24
+		.double array: 8N+24
+		
+===========================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+

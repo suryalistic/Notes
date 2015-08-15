@@ -1,0 +1,3 @@
+Symbol Table:
+	.A symbol table is a key-value pair abstraction.
+	

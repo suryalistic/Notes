@@ -1,0 +1,63 @@
+Sorting: 
+	.In general Callback is a reference to an executable code. 
+	.Visitor pattern is the closest in Java to passing a method to a method(Search for passing method to a method in Java).
+	  closest to function pointers in c or class-type functors in C++ or delegates in C# or first-class functions in javascript.
+	Selection Sort(elementary sort):
+		.Selection sort is the worst for nearly sorted collections.
+	Insertion Sort(elementary sort):
+		.Rougly twice as fast as selection
+		. Performs better on partially sorted array
+		.pairs of keys out of order are called inversions.
+		.partially sorted array has < cN (less than constant times size of array) inversions.
+	Shell Sort:
+		. Uses insertion sort internally
+	Shuffling(application of sort):
+		.follow knuth shuffle
+		.uniform shuffle (1 to i in ith iteration)
+	Convex hull (Application of sort):
+		.Convex Hull of set of N-points is the smallest perimeter fence enclosing all the points.
+		. *** Interesting --geometrical computation--***further reading
+		. Graham scan can be  used to determine the convex hull.
+	Merge Sort(Classic Sort):
+		.Used as sort implementation for objects in Java(Quick Sort for primitives)
+		.Divide array into two halves. Recursively sort each and then merge both.
+		.pre-condition is that the two halves are sorted before merge sort, hence this is a non-trivial solution.
+		.make a copy of the array and split it to half(what happens in odd number of elements??)
+		.sort each of the half. then merge the two arrays based on:
+				maintain three pointers, one for original array position, one for low, one for high of the new array
+				for each iteration of the first array pointer, compare elements at the two sub array pointers and push them to the first array.
+				the pointer on the sub-array of the element pushed is incremented in the case when the element is pushed from it.
+		.selection, insertion, shell are in-place algos, i.e they dont use additional space apart from the array
+		.merge is not an in-place, coz we need to duplicate the array(auxiliary array) for recursive sub-array sorting.
+		.if size of array is 7 or less, use insertion sort for sorting in merge sort.
+		.another way to reduce stress on merge sort is to check before merging, if the biggest element in the first sub-array is smaller than the first element in the second sub-array.
+		.Uses Recursion
+		.O(nlogn)
+	Bottom-up merge sort:
+		.Does not use recursion.
+		.Uses extra space to the size of the array.
+		.O(nlogn)
+	Complexity of Algorithm:
+		.Given a problem X:
+			.model of computation is all the allowable steps to solve X
+			.Cost model is the count of operations in csolving X
+			.Upper Bound: cost for solving X by some algorithm
+			.Lower Bound: cost for solving X by all algorithms.
+			.optimal:algorithm where upper bound and lower bound cost are equal.
+	Comparator:
+		.alternative to comparable interface which is a natural order(where compareTo method is provided in the object itself to provide natural order.)
+		.Read Comparator vs Comparable
+	Stability of sorts:
+		.Sorts are said to be stable when the order of the sorted is preserved within equal items when a second sort is done.
+		.Insertion and merge sort are stable. selection and shell sort are not.
+		.Insertion sort is stable coz, equal elements never past each other.
+		.Selection sort if not stable, coz a long distance swap can move elements over equal elements
+		.Shell sort also for the same reason as selection sort.
+		.Merge sort is stable if the merge is stable. typically in the merge operation, when two elements are equal we consider the element from either left or right only so the order between equal elements is preserved.
+		
+		
+	* one of the important purpose of sort is to bring equal keys together.
+	* various other factors need to be considered before choosing a sort algo. 
+	* Putting elements together is not just the only use of sort.
+	* See video number 33-35-1 at 10th minute for comparison.
+		

@@ -1,0 +1,113 @@
+SalesForce training:
+-------------------
+Part1 : Admin
+-------------
+. Username is unique globally.
+. Same email Id can be used to sign up for different
+. PLATFORM and force.com are different licence types. (*read about different licence types*)
+. SF Chatter = linkedIn+Twitter+Facebook. Social Networking for corporates.
+. App in SF = collection of tabs
+. Universal Objects:
+	.Account = Org.(a customer)
+	.Contact = person's contact information
+	.Task = to do list item
+	.Event = an activity. calendar event
+	.Task and event are both activities
+	.Document = store images and files
+	.Content = replacing document. has more size than document.has libraries(folders). can be subscribed to.
+. Sales Objects:
+	.Opportunity = sales chance, chance to generate revenue
+	.Product = item to sell
+	.Price Book = catalog
+	.Quote = price given to customer.
+.Customer Service Objects:
+	.Case = needs to be resolved
+	.Solution = knowledge sheet to solve the case
+	.Knowledge = replacement for solution.(*read how to set up knowledge*)
+.Marketing Objects:
+	.Lead = unqualified objects. can be converted to a qualified object. can be converted to account, contact or opportunity.
+	.Campaign = list of leads and contacts. leads can be tagged as belonging to a campaign and can be removed from campaign.
+.Custom Objects:
+	.Any object we design.
+
+.Best Practices:
+	.Use Account for Organization
+	.Contact for a person
+	.Case for issue tracking.
+
+.Salesforce Architecture:
+	.Declarative (preferred)
+	.Programmatic
+	
+*******Account, Contact, Opportunity and case are the core objects************WHY?
+	
+*Security cannot be applied on the view layer. i.e not on the textbox, drop down etc. level, rather can be applied to Object level
+ so a field mapped to a UX component can be secured.
+*Full access to a record is : delete, share, transfer the ownership. Full access cannot be shared thru sharing only transfer
+*Profile permission are the supreme, even though the owner can delete the record he owns, if profile does not permit then 
+ they cannot delete the record.
+*setup->security controls -> sharing settings -> Organization-Wide Defaults is the only place in the system
+ where we can restrict the access to records. Can be loosened with a combination of techniques.
+*Open up the restrictions set in OWD with Role-hierarchy.
+*Account is the core object in salesforce
+*Only Account, Contact, Opportunity and case access can be set from Role Edit screen in a private world.
+*Sharing can only be done with groups.
+*Manual Sharing can be done to individual owners
+*Owners of records, People in Role Hierarchy above owners and System Admins have FULL ACCESS to all the records
+
+****Give access using Roles, Permission sets, Sharing Rules, Groups, Account Teams (access rules for Accounts esp.), Opportunity Teams(access rules for Opportunities esp.), 
+	Case Teams(access rules for Cases), Queues(for group of users).****
+
+.Queues:
+	.Every record has only one owner
+	.Queues can have multiple users, so a queue record can be OWNED by multiple users.
+	.Only Leads, Cases and custom objects can be owned by a queue.
+	.Members of queue have full access to records assigned to queue.
+	.When building a queue , you can choose which objects that can be owned by queue and put users on queues.
+	.Alternative is a Case Team
+
+.Page Layouts:
+	.View Mode and Edit Mode are default
+	.Read only fields are not visible in Edit Mode.
+	
+.Record Type, Page Layouts are one to one corresponding.****Read More***
+.Assignment Rules are not valid for Custom Objects	
+
+.Object Relationships:
+	.***formula fields are not stored on the database***
+
+Part 2 : Dev
+----------
+* na10.salesforce.com/ID/e  takes to edit page of the record.
+* Any Contact created and not associated with an account is a private and only the creator of the contact is the owner of that.
+* To open new window in edit mode: 	Hyperlink("/" & id & "/e","Edit","_blank")
+* Apex triggers ignore security. So this is a way to circumvent the "license" enforcement.
+* Too much sharing impacts performance. 
+* add a fully qualified url for remote site settings for web services to work.
+* canoot call trigger from class, only dml has to call trigger.	
+* workflow rules, rollup summary fields of the parent records are invoked in the trigger execution of child	ren.
+* workflow can only do one of the fourr:
+	. task
+	. field update
+	. email
+	. outbound message
+	
+* only test classes are to be written as Private
+* Governer Limits are per thread
+* Governer Limits are per unit test.
+* cumulative limits are per org.
+***** Cannot extend sObjects ******
+* only classes with 'virtual' keyword can be extended.
+* only exception class is a system class that can be extended.
+* VisualForce pages always respect sharing. 
+* 
+
+*Hiring Application:
+	.create a HR profile.
+		.use APp Subscription User profile to clone.
+		
+		
+*SOQL:
+	.Salesforce Object Query Landuage
+	.cannot be used to delete or create data
+	.delete is a two step process, step 1. to fetch all objects to delete and step 2. delete all the fetched objects

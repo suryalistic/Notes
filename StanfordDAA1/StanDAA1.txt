@@ -1,0 +1,9 @@
+ crucial points in DAA:
+ 	.Divide and Conquer(Design paradigm)
+ 	.Greedy Algo(Design Paradigm)
+ 	.Dynamic Programming algorithm(Design Paradigm)
+ 	.Randomization
+ 	.Graphs
+ 	.DataStructures 
+ 	.NP complete
+ 

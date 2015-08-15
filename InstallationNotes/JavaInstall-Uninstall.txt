@@ -1,0 +1,11 @@
+Uninstalling the JDK
+To uninstall the JDK, you must have Administrator privileges and execute the remove command either as root or by using the sudo(8) tool.
+
+Navigate to /Library/Java/JavaVirtualMachines and remove the directory whose name matches the following format:Foot1
+
+/Library/Java/JavaVirtualMachines/jdkmajor.minor.macro[_update].jdk
+For example, to uninstall 8u6:
+
+% rm -rf jdk1.8.0_06.jdk
+Do not attempt to uninstall Java by removing the Java tools from /usr/bin. This directory is part of the system software and any changes will be reset by Apple the next time you perform an update of the OS.
+

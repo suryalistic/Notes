@@ -1,0 +1,2764 @@
+BigData and Hadoop: muthu4all@gmail.com
+	 
+	Big 4: volume(how much), velocity(how fast), variety(what kind), veracity.
+	By Default Hadoop breaks into 128MB pieces of data.
+	HIVE = Data warehousing tool. Schema required while Read.
+	Hadoop 2 parts: 
+		HDFS - Hadoop Distributed File System. Main storage (across cluster or nodes.)
+		Map-Reduce Framework. data processing is done here. algorithm to process data.
+		YARN - component to manage the individual nodes(Cluster). installed over HDFS. HIVE,PIG,HBASE,Zoo Keeper interact with the HDFS.  
+				Can be called as Operating system of the Hadoop framework. Apache mesos is similar to Yarn.
+		Hive: dataware housing tool for data analysis. alternative to Map-Reduce. interprets HQL(Hive QL ~ SQL)commands into Map-Reduce.
+		Pig Latin: pig latin is a language with commands. Pig will convert pig latin to Map-Reduce.
+		Hive, Pig convert their native commands HQL, Pig Latin respectively to Map-Reduce.
+		Mahout: Machine learning alogorithms
+		HBase: only transactional database built over Map-REduce. NoSQL database.
+		Sqoop: load structural data.
+		Flume: load unstructured or semi-Structured data.has a 
+		R: statistical language
+		Oozie: workflow
+	
+	Hadoop 1.x: Yarn and Map-Reduce was one component. YARN was not part of 1.x	
+	
+	
+	File write is parallel, file replication is sequential across nodes.
+	Piping during replication is done across data nodes.
+	
+	
+Hadoop Architecture :
+	commonly 7 configuration files: <Hadoop-installation-folder>/etc/hadoop
+		hadoop-env.sh
+		core-site.xml
+		hdfs-site.xml
+		mapred-site.xml
+		yarn-site.xml
+		master.xml
+		slaves.xml
+ HDFS:		
+ 	WORM (write once read multiple)
+	horizontal scaling of name nodes is "Federation". combination of two or more name nodes is federation.
+	the total memory(RAM) is combined and used to manage the data nodes. 
+	for end user the federation acts as one Name Node.
+	the total memory is called Block Pool. Generation 1 Hadoop did not have Federation.	
+	sub-partitions of this Block Pool can be created.
+	Name node has all the data node infor in the RAM, but the edit log(log history of metda data) info on hard disk.
+	secondary name node is a passive back up of primary name node, secondary name node reconciles the data in memory of 
+	primary name node by using the edit logs of primary name node and stores it in its own HD. (periodically every 1hr)
+	Edit log is copied from primary name node to secondary name node every hour (or whatever is configured). the diff
+	is used to reconcile the current state using the edit logs. Reconciliation is done with edit logs using an in memory image called FSIMage.
+	"Zoo Keeper" will be responsible to switch the name nodes when the primary name node goes down etc.
+	Stand-by name node is used from version 2, does not have the lag that secondary name node has.
+	with stand-by name node, edit is written by name node to shared-edit-logs. With Stand-by name node, secondary name node is not required.
+	DataNode does a heartbeat to NameNode to tell that it is up and data blocks are available. helps load balancing, block allocation:
+		1.Total Storage capacity
+		2.Fraction of storage used.
+		3.number of data transfers currently in progress.
+		
+	Client programs are used to load data into HDFS
+	submit map-reduce, pig, hive queries
+	retrive and view results.
+	Write: 	client (eg: hdfs dfs) gets input, talks to nameNode about availability of nodes, and the nodes numbers where the file blocks can be stored.
+			Client splits the file into blocks, and using replication factor stores them on nodes. while writing, it gives the filebock to first node, first 
+			node writes and gives to second and second to third (based on replication factor=3). third sends acknowledgement to second, second to first and 
+			first to Name node that the job is complete and also the locations of the block. replication of each block happens sequentially(). write happens 
+			in parallel.
+	REad: happens in parallel.
+
+YARN (Yet Another Resource Negotiator)- Resource Management:
+	Resource Manager similar to Name node. only one per cluster. if it fails, is restarted.	
+	There are many Node manager (one per data node.)
+	
+	Configuration files:
+		hadoop-env.sh : environment variables for the whole eco-system
+		core-site.xml : where the hdfs file system are located. host name etc.
+		hdfs-site.xml : namenode, secondary name node, replication factor etc.
+		yarn-site.xml : yarn settings
+		mapred-site.xml: what framework like yarn etc is put here.
+		masters: secondary name node data
+		slaves:  all data nodes info
+	Chef and puppet labs can be used to configure all nodes at once.
+	
+	commands:
+		hadoop : resource manager - YARN
+		hdfs   : filesystem command.
+	
+	for sanity of hadoop cluster:
+		 sudo service hadoop-master stop; 
+		 sudo service hadoop-master start; 
+		 hadoop dfsadmin -safemode leave ; 
+		 sudo jps
+	
+	DataLoading:
+	Map-Reduce: Map -> Splits
+				Reduce -> consolidates
+				Jobs run in parallel and the results from different nodeMangers is consolidated over network
+				
+	
+	Map-Reduce Components:
+		Resource Manager(in gen1 of Job Tracker): Main Program that takes the initial request from client
+		Node manager(in gen1 Task tracker): per node , which is also a data node. program is copied here
+		Application master: generally a JVM container. will start the task.	
+		ResourceManager(contains ApplicationsManager, one per cluster)
+		NodeManager(on DataNode, monitors resources on DataNode)
+		ApplicationMaster(is actually a container on the DataNode by the NodeMangaer as per instructions from Resource Manager, lifecycle = per application)
+		Container(created by REsource Manager as needed)
+		CLient (hadoop) copies the program provided in the jar to a common location in HDFS, available for pickup by NodeManagers. 
+		
+	Map: (K, V) -> List(K, V)
+	Reduce : (k, List(V)) -> List(K,V)
+		
+	*** Total Data nodes required = Total Data to be stored * Replication factor /10
+	*** Time to read Data = Total Data / Read speed (secs)
+	
+	Input Splits: Used to avoid file is split abruptly. we need to define what a record and record reader is (implement our own).
+	HDFS is not aware of data inside blocks. so, if two blocks contain parts of one line, hadoop uses Record Reader to combine them based on  the record definition (Key , value definitions in custom input format) 
+	
+	Combiner : mini-reducer. works in all cases where commutative and associative properties work on the mapper values. 
+		Combiner uses reducer interface Runs at mapper level. before Reducer level. basically a reducer on each mapper.
+	Partitioner: to segregate reducer. Reducers work in mutually exclusive.Runs before reducer to route to a reducer. 
+		used when we need more number of reducers.  runs at reducer level.
+	
+	
+	Distributed Cache: copy of a library or small table kept on all the nodes where the mapper is running.
+		setup cache in mapper in a 'setup' method.
+		can be used by the map method of mapper.
+		Also called map side join
+	Reduce Side Join: on reduce side.
+
+	MR Unit: unit test for  MR.
+	
+	Sequence FIle: Binary data. Compressed Block, Uncompressed, Compressed Record
+	
+	
+	PIG:
+		structured data.
+		highly unstructured data like audio, video, photos etc. MR has better processing prospects.
+							Pig Latin 
+								!
+							   Pig
+								!
+							HDFS & MR
+								!
+							  Hadoop		
+	Three modes of input:				  
+		1.shell mode (shell is called Grunt)
+		2.script mode: script.pig file executed.
+		3.pig scripts embedded from within high level lang. (java) code.
+	two modes of execution: 
+		1.Local (local hd is data storage) pig -x local
+		2.Distributed mode(HDFS-MR) pig
+	
+	DataStructure:
+		(2,{(2,3,4),(2,2,2),(2,2,1)})
+		(2,2,1) -> Tuple			
+		{} -> bag
+		2 -> atom
+		2 -> grouped by (atom or can also be a tuple)
+		((),{(2,3,4),(4,2,2),(2,2,1)})
+	can also group by multiple columns
+	Load using PigStorage to define schema.
+	
+	
+	HIVE:
+		can run only on pseudo or distributed modes.
+		HQL
+		Data needs to be structured
+		derby db is provided by default for storing meta-data.(stores table structure) MySQL 
+		if required, Hive will convert statements into MR instructions
+		schema on read (no check done while insert)
+		HDFS stores files, Hive is an abstraction built on top. HDFS does not track tables built on top of files.
+		MetaStore: 
+			location of the files.
+			table schema (structure)
+		Load data into HIVE:
+			local
+			load into hdfs and point
+			build table on top of already loaded data.
+			aggregation and other similar functions like count etc. generate MR instructions
+			
+		Internal vs External Tables
+		Partition vs Bucketing
+	
+	HBase
+		NoSQL:  Can be called Aggregate Oriented.
+				Types:	Key-Value, Document, ColumnFamily, Graph
+				CAP theorem.
+		HBase components:
+				HMaster
+				HRegionServer
+				Data stored in HDFS
+				HLog ~ Edit Log on HDFS
+		Compactions
+		ZooKeeper
+		HBase = Sorted map: key, value
+		HBase value = RowKey -> ColumnFamily -> column identifier
+		#of Memstores = #of Column Families
+		HFiles generated per memstore when memstore is full and HFile is persisted to HDFS.
+		each table will have atleast one column family.			
+	
+
+	Sqoop: import and export data from RDBMS to and from HDFS
+		runs from hadoop eco system.
+		
+	Oozie:
+		schedule components as workflow
+			3 components:
+			workflow
+			coordinator: schedules and triggers the Oozie. can be time triggered or data triggered
+			bundles
+			workflow.xml to configure workflow. xml based and is called HPDL (Hadoop process Definition language)
+			Job.properties
+			lib -> contains all jars to be used in Oozie		
+		
+
+	
+	
+Questions:
+	Can you share or point to the documentation(guide) to install our own stack from scratch? 
+	Can the client Program API, or the PIG, HIVE Map-Reduce access the meta-data (Master Node)? No
+	Does stand by name node also reconcile from edit logs?Also, can secondary name node's lag be configured?
+	
+	are the files put on each node or one location, if so where is the location of distributed cache?
+	you said about showing an example of passing additional parameters to mapper program?
+	
+	is it sorting/shuffling the output of both mappers and combining the results because they originated from the same job?
+	
+	.I thought HDFS was not aware of data inside blocks. so, if two blocks contain parts of one line, does hadoop use Record Reader to combine them based on the record definition (Key , value definitions in custom input format) ?
+	.example of binary data handling in MR code?
+	.other input and output formats	
+	
+	
+	
+	
+################################ from EDU ######################################
+	
+Hadoop 2 commands and data file:
+Data reference - https://edureka.wistia.com/medias/gp4nvomamt/download?media_file_id=77765371 
+cmd reference - https://edureka.wistia.com/medias/z079nj9ddx/download?media_file_id=77765110 
+Sqoop data loading - https://edureka.wistia.com/medias/4ppg0wirr6
+Final Project - https://edureka.wistia.com/medias/qj69hbt0je
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+								Module02
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+//sample execution
+hadoop jar /usr/lib/hadoop-2.2.0/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.2.0.jar wordcount /test.txt /output/batch/may11/testout3
+
+hadoop jar /usr/lib/hadoop-2.2.0/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.2.0.jar wordcount /test2.txt /output/batch/may11/testout6
+
+/usr/lib/hadoop-2.2.0/etc/hadoop
+
+
+
+hadoop jar /usr/lib/hadoop-2.2.0/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.2.0.jar wordcount /02feb/test.txt /output/batch/02feb/testout1
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+									Module03
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Steps to run mapR jobs
+
+1) Create new project
+2) Import source code
+3) Add jar files to libraries
+	- hadoop-common-2.2.0.jar - from /usr/lib/hadoop-2.2.0/share/hadoop/common
+	- hadoop-mapreduce-client-core-2.2.0.jar  - from /usr/lib/hadoop-2.2.0/share/hadoop/mapreduce
+
+==================
+word count
+===================
+
+
+hdfs dfs -rm /batch/<batch>/data/input/wordcountin.txt
+hdfs dfs -mkdir -p /batch/<batch>/data/input
+hdfs dfs -put /home/edureka/<batch>/data/wordcountin.txt /batch/<batch>/data/input/wordcountin.txt
+
+
+hdfs dfs -rmr /batch/<batch>/output/mywordcount
+hadoop jar v2wordcount.jar in.edureka.mapreduce.WordCount /batch/<batch>/data/input/wordcountin.txt /batch/<batch>/output/mywordcount
+hadoop jar 02febwordcount1.jar in.edureka.mapreduce.WordCount /02feb/deviceinput.txt /output/batch/02feb/mywordcount1
+
+
+hdfs dfs -rm /batch/oct25/data/input/wordcountin.txt
+
+hdfs dfs -mkdir -p /batch/01feb/data/input
+hdfs dfs -put /home/edureka/01feb/data/wordcountin.txt /batch/01feb/data/input/wordcountin.txt
+
+
+hdfs dfs -rmr /batch/<batch>/output/mywordcount
+hadoop jar v2wordcount.jar in.edureka.mapreduce.WordCount /batch/01feb/data/input/wordcountin.txt /batch/01feb/output/mywordcount5
+hadoop jar 02febwordcount1nored.jar in.edureka.mapreduce.WordCount /batch/01feb/data/input/wordcountin.txt /batch/01feb/output/mywordcount6
+
+hadoop jar oct25.jar /batch/oct25/data/input/wordcountin.txt /batch/oct25/output/mywordcountoct25
+
+
+
+
+
+================================
+WordSize_WordCount
+=======================
+using the same input as above - wordcountin.txt
+
+
+hdfs dfs -rmr /batch/<batch>/output/mywordsizecount
+hadoop jar v2wordcount.jar in.edureka.mapreduce.WordSize_WordCount /batch/<batch>/data/input/wordcountin.txt /batch/<batch>/output/mywordsizecount
+
+hadoop jar v2wordcount.jar in.edureka.mapreduce.WordSize_WordCount /batch/oct25/data/input/wordcountin.txt /batch/oct25/output/mywordsizecount1
+
+
+
+===============================
+No Reducer
+==========================
+using the same input as above - wordcountin.txt
+
+
+hdfs dfs -rmr /batch/<batch>/output/mywordscountnoreduce
+hadoop jar v2wordcount.jar in.edureka.mapreduce.WordCountNoReduce /batch/<batch>/data/input/wordcountin.txt /batch/<batch>/output/mywordscountnoreduce
+
+hadoop jar v2wordcount.jar in.edureka.mapreduce.WordCountNoReduce /batch/oct25/data/input/wordcountin.txt /batch/oct25/output/mywordscountnoreduce
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Data Types
+
+java data type	Hadoop data type
+
+int 		IntWritable
+float		FloatWritable
+double		DoubleWritable
+string		Text
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+									Module04
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Module 4 demos
+
+http://www.mathsisfun.com/associative-commutative-distributive.html
+=========================
+Partitioner
+=========================
+hdfs dfs -rm /batch/<batch>/data/input/mrpartition.txt
+hdfs dfs -put /home/edureka/<batch>/data/mrpartition.txt /batch/<batch>/data/input/mrpartition.txt
+
+
+
+hdfs dfs -rmr /batch/<batch>/output/mrpartition
+
+hadoop jar v2mod4.jar in.edureka.mapreduce.WithCombiner_and_Partitioner /batch/<batch>/data/input/mrpartition.txt /batch/<batch>/output/mrpartition
+
+
+hdfs dfs -put /home/edureka/01feb/data/mrpartition.txt /batch/01feb/data/input/mrpartition.txt
+hdfs dfs -put /home/edureka/01feb/data/mrpartition.txt /batch/02feb/data/input/mrpartition.txt
+
+hadoop jar 01febmod4.jar in.edureka.mapreduce.WithCombiner_and_Partitioner /batch/01feb/data/input/mrpartition.txt /batch/01feb/output/mrpartition3
+
+hadoop jar 02febwordcountcombiner.jar in.edureka.mapreduce.WithCombiner_and_Partitioner /batch/02feb/data/input/mrpartition.txt /batch/02feb/output/mrpartition9
+
+hadoop jar 02febwordcountpart.jar in.edureka.mapreduce.WithCombiner_and_Partitioner /batch/01feb/data/input/mrpartition.txt /batch/01feb/output/mrpartition6
+
+hadoop jar myjar11mayparcom.jar WithPartitioner /batch/02feb/data/input/mrpartition.txt /output/batch/may11/mrpartition1
+
+
+=========================
+Combiner
+=========================
+Comment Partitioner and Reducer to check the output
+		//Below three commands to be commented for combiner
+		
+		// Forcing program to run 3 reducers
+		//conf.setNumReduceTasks(3);
+		//conf.setReducerClass(Reduce.class);
+		//conf.setPartitionerClass(MyPartitioner.class);
+
+hadoop jar v2module502feb1com.jar in.edureka.mapreduce.WithCombiner_and_Partitioner /batch/oct25/data/input/mrpartition.txt /batch/oct25/output/combiner2
+
+
+=========================
+Deidentify data
+=========================
+
+hdfs dfs -put /home/edureka/<batch>/data/healthcare_Sample_dataset1.csv /batch/<batch>/data/input/healthcare_Sample_dataset1.csv
+
+hadoop jar v2mod4.jar in.edureka.mapreduce.DeIdentifyData /batch/<batch>/data/input/healthcare_Sample_dataset1.csv /batch/<batch>/output/deidentify
+
+
+hdfs dfs -put /home/edureka/oct25/data/healthcare_Sample_dataset1.csv /batch/oct25/data/input/healthcare_Sample_dataset1.csv
+
+hadoop jar v2mod4.jar in.edureka.mapreduce.DeIdentifyData /batch/oct25/data/input/healthcare_Sample_dataset1.csv /batch/oct25/output/deidentify1
+
+
+
+
+==========================
+Weather Data
+==========================
+
+hdfs dfs -put /home/edureka/<batch>/data/Temperature.txt /batch/<batch>/data/input/Temperature.txt
+
+hadoop jar v2mod4.jar in.edureka.mapreduce.Max_temp /batch/<batch>/data/input/Temperature.txt /batch/<batch>/output/maxtemp
+
+
+hdfs dfs -put /home/edureka/oct25/data/Temperature.txt /batch/oct25/data/input/Temperature.txt
+
+hadoop jar v2mod4.jar in.edureka.mapreduce.Max_temp /batch/oct25/data/input/Temperature.txt /batch/oct25/output/maxtemp1
+
+
+http://hadoopbeforestarting.blogspot.in/2012/12/difference-between-hadoop-old-api-and.html
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+								Module05
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Reduce side join
+
+//input files
+//custs
+//txns
+
+hdfs dfs -mkdir -p /batch/<batch>/data/advmr
+
+
+hdfs dfs -put /home/edureka/<batch>/data/advmr/custs /batch/<batch>/data/advmr/custs
+hdfs dfs -put /home/clouedurekaera/<batch>/data/advmr/txns /batch/<batch>/data/advmr/txns
+
+hadoop jar advancemr.jar ReduceJoinProgram.ReduceJoin /batch/<batch>/data/advmr/custs /batch/<batch>/data/advmr/txns /batch/<batch>/output/advmr/reducejoin
+
+~~~~~~~~~
+hdfs dfs -mkdir -p /batch/oct25/data/advmr
+
+
+hdfs dfs -put /home/edureka/01feb/data/advmr/custs /batch/01feb/data/advmr/custs
+hdfs dfs -put /home/edureka/01feb/data/advmr/txns /batch/01feb/data/advmr/txns
+
+hadoop jar advmr.jar ReduceJoinProgram.ReduceJoin /batch/01feb/data/advmr/custs /batch/01feb/data/advmr/txns /batch/11may1/output/advmr/reducejoin2
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Distributed Cache
+
+
+//abc.dat
+//dcinput
+
+hdfs dfs -put /home/edureka/<batch>/data/advmr/abc.dat /abc.dat
+hdfs dfs -put /home/edureka/<batch>/data/advmr/dcinput /batch/<batch>/data/advmr/dcinput
+
+
+hadoop jar v2advancemr.jar DistributedCache.MyDC /batch/<batch>/data/advmr/dcinput /batch/<batch>/output/advmr/dc
+~~~~
+hdfs dfs -put /home/edureka/01feb/data/advmr/abc.dat /abc.dat
+hdfs dfs -put /home/edureka/01feb/data/advmr/dcinput /batch/01feb/data/advmr/dcinput
+
+
+hadoop jar advmr.jar DistributedCache.MyDC /batch/01feb/data/advmr/dcinput /batch/11may1/output/advmr/dc2
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+counters
+
+//inputdata.txt
+hdfs dfs -put /home/edureka/<batch>/data/advmr/inputdata.txt /batch/<batch>/data/advmr/inputdata.txt
+
+hadoop jar v2advancemr.jar CountersSample.MyCounter /batch/<batch>/data/advmr/inputdata.txt /batch/<batch>/output/advmr/counter
+~~~~
+hdfs dfs -put /home/edureka/01feb/data/advmr/inputdata.txt /batch/01feb/data/advmr/inputdata.txt
+
+hadoop jar advmr.jar CountersSample.MyCounter /batch/01feb/data/advmr/inputdata.txt /batch/11may1/output/advmr/counter1
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Custom Input format
+
+//inputdatacusotmif.txt
+hdfs dfs -put /home/edureka/<batch>/data/advmr/inputdatacusotmif.txt /batch/<batch>/data/advmr/inputdatacusotmif.txt
+
+hadoop jar v2advancemr.jar CustomInputFormat.MyFile /batch/<batch>/data/advmr/inputdatacusotmif.txt /batch/<batch>/output/advmr/customifresult.txt
+~~~~
+hdfs dfs -put /home/edureka/01feb/data/advmr/inputdatacusotmif.txt /batch/01feb/data/advmr/inputdatacusotmif.txt
+
+hadoop jar advmr.jar CustomInputFormat.MyFile /batch/01feb/data/advmr/inputdatacusotmif.txt /batch/11may1/output/advmr/customifresult2.txt
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+sequence files
+
+hdfs dfs -put /home/edureka/<batch>/data/advmr/images /images
+hdfs dfs -put /home/edureka/<batch>/data/advmr/seqinput.txt /batch/<batch>/data/advmr/seqinput.txt
+
+//Converting images in a folder to one single squence file
+
+hadoop jar v2advancemr.jar SequenceFile_Example.BinaryFilesToHadoopSequenceFile /batch/<batch>/data/advmr/seqinput.txt /batch/<batch>/output/advmr/sequencefile
+hadoop jar v2advancemr.jar SequenceFile_Example.ImageDriver /batch/<batch>/output/advmr/sequencefile /batch/<batch>/output/advmr/sequencefileresult
+
+~~~~
+hdfs dfs -put /home/edureka/01feb/data/advmr/images /images
+hdfs dfs -put /home/edureka/01feb/data/advmr/seqinput.txt /batch/01feb/data/advmr/seqinput.txt
+
+//Converting images in a folder to one single squence file
+
+hadoop jar advmr.jar SequenceFile_Example.BinaryFilesToHadoopSequenceFile /batch/01feb/data/advmr/seqinput.txt /batch/11may1/output/advmr/sequencefile2
+hadoop jar advmr.jar SequenceFile_Example.ImageDriver /batch/11may1/output/advmr/sequencefile2 /batch/11may1/output/advmr/sequencefileresult2
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+MRUnit demo
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+								Module06
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ref document in LMS to setup JAVA_HOME
+
+sudo gedit .bashrc
+export JAVA_HOME=/usr/lib/jvm/java-6-sun-1.6.0.24
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+cat /home/edureka/<batch>/data/pig_localtest.txt
+
+cat /home/edureka/01feb/data/pig_localtest.txt
+
+pig -x local;
+
+
+
+
+records = LOAD '/home/edureka/<batch>/data/pig_localtest.txt' AS (name:chararray, count:int);
+
+records = LOAD '/home/edureka/01feb/data/pig_localtest.txt' AS (name:chararray, count:int);
+
+
+records = LOAD '/batch/01feb/data/pig_webcount.txt' AS (name:chararray, count:int);
+
+
+
+dump records;
+
+toPrint = LIMIT records 2;
+dump toPrint;
+
+DESCRIBE records;
+
+EXPLAIN records;
+Logical Plan
+Physical Plan
+Map Reduce Plan
+
+
+ILLUSTRATE records;
+
+
+quit;
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Pig program structure
+~~~~~~~~~~~~~~~~~~~~~
+
+Load ( input file location in local/hdfs )
+process
+Dump (sinks results to console)/ store (sink results to file system local/hdfs) - MR gets triggered
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+pig;
+Sample :: pig_hdfstest.txt
+
+hdfs dfs -rm /batch/<<batchname>>/data/pig_hdfstest.txt
+hdfs dfs -put pig_hdfstest.txt /batch/<<batchname>>/data/pig_hdfstest.txt
+
+
+
+myrel1 = LOAD '/batch/<<batch>>/data/pig_hdfstest.txt' as (c1:int,c2:int,c3:int);
+
+hdfs dfs -rm /batch/oct25/data/pig_hdfstest.txt
+hdfs dfs -put pig_hdfstest.txt /batch/01feb/data/pig_hdfstest.txt
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//for local mode
+myrel1 = LOAD '/home/edureka/01feb/data/pig_hdfstest.txt' as (c1:int,c2:int,c3:int);
+
+
+
+
+myrel1 = LOAD '/batch/01feb/data/pig_hdfstest.txt' as (c1:int,c2:int,c3:int);
+myrelgroup = group myrel1 by c1;
+dump myrelgroup
+myrelgroupc2 = group myrel1 by c2;
+dump myrelgroupc2
+myrelgroupc3 = group myrel1 by c3;
+dump myrelgroupc3
+
+
+===========================feb14===========
+
+
+
+Group by multiple columns
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+hdfs dfs -rm /batch/oct25/data/pig_multicolumngroup.txt
+hdfs dfs -put pig_multicolumngroup.txt /batch/01feb/data/pig_multicolumngroup.txt
+
+myrel1mg = LOAD '/batch/01feb/data/pig_multicolumngroup.txt' as (c1:int,c2:int,c3:int);
+
+myrel1mg = LOAD '/home/edureka/01feb/data/pig_multicolumngroup.txt' as (c1:int,c2:int,c3:int);
+
+
+myrelgroupmulti = group myrel1mg by (c1,c3);
+dump myrelgroupmulti
+describe myrelgroupmulti
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+myrel1 = LOAD '/batch/01feb/data/pig_hdfstest.txt' as (c1:int,c2:int,c3:int);
+myrelgroup = group myrel1 by c1;
+
+atom/tuple/bag/relation
+outerBag :  myrel1 is outerbag
+
+InnerBag : myrelgroup has innerbag
+
+
+group - collects records with same key and creates bag
+
+
+to see schema of relation
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+describe myrel1;
+describe myrelgroup;
+
+in group 
+key	- column name is 'group'
+value 	- column name is previous alias/name
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+webcount demo
+
+Sample file : pig_webcount.txt
+
+
+Input
+~~~~~
+
+en google.com 52 100
+en yahoo.com 60 100
+us google.com 70 100
+en google.com 68 100
+us twitter.com 60 100
+us google.com 70 100
+en facebook.com 68 100
+en google.com 50 100
+en facebook.com 72 100
+
+
+en google.com 52 100
+en google.com 68 100
+en google.com 50 100
+
+
+result
+~~~~~~
+
+
+google.com 170
+yahoo.com 60
+facebook.com 140
+twitter.com 
+
+
+hdfs dfs -rm /batch/<<batch>>/data/pig_hdfstest.txt
+hdfs dfs -put pig_webcount.txt /batch/<<batch>>/data/pig_webcount.txt
+
+hdfs dfs -rm /batch/oct25/data/pig_hdfstest.txt
+hdfs dfs -put pig_webcount.txt /batch/01feb/data/pig_webcount.txt
+
+
+records = LOAD '/batch/<<batch>>/data/pig_webcount.txt' using PigStorage(' ') as  (projectname:chararray, pagename:chararray, pagecount:int,pagesize:int);
+
+
+records = LOAD '/batch/01feb/data/pig_webcount.txt' using PigStorage(' ') as  (projectname:chararray, pagename:chararray, pagecount:int,pagesize:int);
+
+records = LOAD '/home/edureka/01feb/data/pig_webcount.txt' using PigStorage(' ') as  (projectname:chararray, pagename:chararray, pagecount:int,pagesize:int);
+
+
+filtered_records = FILTER records by projectname=='en';
+describe filtered_records;
+
+grouped_records = GROUP filtered_records by pagename;     
+describe grouped_records;
+
+results = FOREACH grouped_records generate group,SUM(filtered_records.pagecount);
+describe results;
+
+sorted_result = ORDER results by $1 desc;
+
+
+STORE sorted_result INTO '/batch/<<batchname>>/output/pig/webcount';
+
+
+STORE sorted_result INTO '/batch/01feb/output/pig/webcount24';
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+===============================
+
+
+
+Group / Co-Group / Join Samples
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sample files : pig_student.tsv, pig_studentRole.tsv
+
+hdfs dfs -put pig_student.tsv /batch/<<batchname>>/data/pig_student.tsv
+
+hdfs dfs -put pig_studentRole.tsv /batch/<<batchname>>/data/pig_studentRole.tsv
+
+
+hdfs dfs -put pig_student.tsv /batch/01feb/data/pig_student.tsv
+hdfs dfs -put pig_studentRole.tsv /batch/01feb/data/pig_studentRole.tsv
+
+
+Group Sample
+~~~~~~~~~~~~
+
+A= load '/batch/<<batchname>>/data/pig_student.tsv' as (name:chararray,age:int,gpa:float);
+
+
+A= load '/batch/01feb/data/pig_student.tsv' as (name:chararray,age:int,gpa:float);
+A= load '/home/edureka/01feb/data/pig_student.tsv' as (name:chararray,age:int,gpa:float);
+
+
+
+
+X= group A by name;
+dump X;
+describe X;
+
+sum = FOREACH X GENERATE group,SUM(A.gpa);
+dump sum;
+describe sum;
+
+Cogroup
+~~~~~~~
+B = load '/batch/<<batchname>>/data/pig_studentRole.tsv' as (name:chararray, rollno:int);
+
+
+B = load '/batch/01feb/data/pig_studentRole.tsv' as (name:chararray, rollno:int);
+B = load '/home/edureka/01feb/data/pig_studentRole.tsv' as (name:chararray, rollno:int);
+
+
+XCogroup = cogroup A by name, B by name;
+dump XCogroup;
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+21/05/2015
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Join
+~~~~~
+
+XJoin = join A by name, B by name;
+
+dump XJoin;
+
+
+
+Union Sample
+~~~~~~~~~~~~
+
+Sample Files : pig_union1.tsv, pig_union2.tsv
+
+
+hdfs dfs -put pig_union1.tsv /batch/01feb/data/pig_union1.tsv
+hdfs dfs -put pig_union2.tsv /batch/01feb/data/pig_union2.tsv
+
+
+A = LOAD '/batch/01feb/data/pig_union1.tsv' as (a1:int,a2:int,a3:int);
+B = LOAD '/batch/01feb/data/pig_union2.tsv' as (b1:int,b2:int,b3:int);
+
+
+
+UNIONRESULT = UNION A,B;
+
+DUMP UNIONRESULT;
+
+ILLUSTRATE UNIONRESULT;
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+wordcount sample
+
+sample file : pig_wordcount.txt
+
+
+~~~~~~~~~~~~~~~~~~~~
+This is edureka session
+welcome to bigdata training by edureka
+training is good
+bigdata is good and future is bigdata bigdata bigdata
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+
+hdfs dfs -put pig_wordcount.txt /batch/<<batchname>>/data/pig_wordcount.txt
+
+hdfs dfs -put pig_wordcount.txt /batch/01feb/data/pig_wordcount.txt
+
+
+
+wordcount
+=========
+myinput = load '/batch/<<batchname>>/data/pig_wordcount.txt' as (line);
+
+myinput = load '/batch/01feb/data/pig_wordcount.txt' as (line);
+
+myinput = load '/home/edureka/01feb/data/pig_wordcount.txt' as (line);
+
+
+
+//TOKENIZE splits the line into a field for each word. 
+//flatten will take the collection of records returned by TOKENIZE and
+//produce a separate record for each one, calling the single field in the
+//record word.
+///
+
+//below line is equivalent to
+
+//part1 = foreach myinput generate (TOKENIZE(line)) as record;
+//words = foreach part1 generate flatten(record) as word;
+
+words = foreach myinput generate flatten(TOKENIZE(line)) as word;
+grpd = group words by word;
+cntd = foreach grpd generate group, COUNT(words);
+dump cntd;
+
+or
+store cntd INTO '/batch/01feb/output/pig_wordcount';
+
+store cntd INTO '/home/edureka/11may/output/pig_wordcount';
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+myinput = load '/batch/01feb/data/pig_wordcount.txt' as (line);
+words = foreach myinput generate flatten(TOKENIZE(line)) as word;
+grpd = group words by word;
+cntd = foreach grpd generate group, COUNT(words);
+store cntd INTO '/batch/01feb/output/pig_wordcount';
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+~~~~~~~~~~~~~~~~~
+
+Cust and transaction analysis
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Customer / transaction sample
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Identify top 100 high spending customer
+
+
+Sample Files : custs, txns
+
+
+hdfs dfs -put custs /batch/<<batchname>>/data/custs
+
+hdfs dfs -put txns /batch/<<batchname>>/data/txns
+
+hdfs dfs -put custs /batch/01feb/data/custs
+
+hdfs dfs -put txns /batch/01feb/data/txns
+
+
+
+A. Load Customer records
+========================
+cust = load '/batch/01feb/data/custs' using PigStorage(',') as (custid:chararray, firstname:chararray, lastname:chararray,age:long,profession:chararray);
+cust = load '/home/edureka/01feb/data/custs' using PigStorage(',') as (custid:chararray, firstname:chararray, lastname:chararray,age:long,profession:chararray);
+
+
+custtemp = load '/batch/01feb/data/custs' using PigStorage(',');
+
+
+B. Select only 100 records
+==========================
+amt = limit cust 100;
+dump amt;
+
+c. Group customer records by profession
+=======================================
+groupbyprofession = group cust by profession;
+
+D. Count no of customers by profession
+======================================
+countbyprofession = foreach groupbyprofession generate group, COUNT(cust);
+dump countbyprofession;
+
+E. Load transaction records
+===========================
+txn = load '/batch/01feb/data/txns' using PigStorage(',') as(txnid:chararray, date:chararray,custid:chararray,amount:double,category:chararray,product:chararray,city:chararray,state:chararray,type:chararray);
+
+txn = load '/home/edureka/01feb/data/txns' using PigStorage(',') as(txnid:chararray, date:chararray,custid:chararray,amount:double,category:chararray,product:chararray,city:chararray,state:chararray,type:chararray);
+
+F. Group transactions by customer
+=================================
+txnbycust = group txn by custid;
+
+G. Sum total amount spent by each customer
+==========================================
+spendbycust = foreach txnbycust generate group, SUM(txn.amount);
+
+
+H. Order the customer records beginning from highest spender
+============================================================
+custorder = order spendbycust by $1 desc;
+
+I. Select only top 100 customers
+================================
+top100cust = limit custorder 100;
+
+J. Join the transactions with customer details
+==============================================
+top100join = join top100cust by $0, cust by $0;
+describe top100join;
+
+K. Select the required fields from the join for final output
+============================================================
+
+//custid, total spending, custid:chararray, firstname:chararray, lastname:chararray,age:long,profession:chararray
+
+top100 = foreach top100join generate $0,$3,$4,$5,$6,$1;
+describe top100;
+
+L.Dump the final output
+=======================
+dump top100;
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+Health care UDF
+
+hdfs dfs -put healthcare_Sample_dataset1.csv /batch/01feb/data/healthcare_Sample_dataset1.csv
+
+hdfs dfs -put healthcare_Sample_dataset2.csv /batch/01feb/data/healthcare_Sample_dataset2.csv
+
+hdfs dfs -put healthcare_Sample_dataset3.csv /batch/01feb/data/healthcare_Sample_dataset3.csv
+
+hdfs dfs -put healthcare_Sample_dataset4.csv /batch/01feb/data/healthcare_Sample_dataset4.csv
+
+pig deidentify_script.pig
+~~~~~~~~~~~~~~~~~~~~
+
+extra - piggy bank
+
+/home/edureka/01feb/refjar/piggybank.jar
+
+/usr/lib/pig-0.12.0/contrib/piggybank/java/piggybank.jar
+
+
+hdfs dfs -put xml1.xml /batch/01feb/data/input/xml1.xml
+
+pig pigxml1.pig
+
+~~~~~~~~~~~~~~~~~~~~~~
+another xml sample
+
+hadoop fs -put xml2.xml /batch/<<batchname>>/data/xml2.xml
+
+pig pigxml2.pig
+
+DEFINE ref : http://pig.apache.org/docs/r0.7.0/piglatin_ref2.html#DEFINE
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+								Module07-Hive:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Hive path
+/usr/lib/hive
+
+/usr/lib/hive-0.13.1-bin
+
+conf files
+/usr/lib/hive-0.13.1-bin/conf/hive-site.xml  --> linke to /etc/hive
+
+default derby database location --> will get created in the location being executed.
+/var/lib/hive-0.13.1-bin/metastore
+
+default data directory in hdfs (can be configured with property hive.metastore.warehouse.dir in hive-site.xml)
+/user/hive/warehouse
+
+Reference for local/rembote db for metastore with mysql
+http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-Installation-Guide/cdh4ig_topic_18_4.html
+
+hive;
+
+show databases;
+
+create database if not exists 11may;
+
+describe database 11may;
+
+use 11may;
+
+show tables;
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+simple table
+
+hive_emp.txt
+
+muthukumar, 800000, IT
+ram,900000,ADMIN
+geetha,800000,IT
+ramya,800000,ADMIN
+nila,700000,SUPPORT
+
+
+##############################
+Load data from local file
+#############################
+
+//create table
+create table emp(name string, salary float,dep string)
+row format delimited
+fields terminated by ',';
+
+//row format delimited - each row is record
+//in record fields are delimited by ','
+
+//load data
+
+load data local inpath '/home/edureka/01feb/data/hive_emp.txt' into table emp;
+
+//local will load data from local system.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//What happens if the same file or different file again?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+// load - multiple times - What happens
+
+hadoop dfs -put /home/edureka/01feb/data/hive_emp.txt /user/hive/warehouse/11may.db/emp/hive_emp_manualcopy.txt
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+//Remove file directly from the hdfs. Table location. 
+
+hadoop dfs -rm /user/hive/warehouse/14feb.db/emp/hive_emp.txt
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// overwrite the data
+
+load data local inpath '/home/edureka/01feb/data/hive_emp.txt' overwrite into table emp;
+
+
+
+loading error files
+~~~~~~~~~~~~~~~~~~~
+load data local inpath '/home/edureka/01feb/data/hive_email.txt' into table emp;
+hadoop dfs -put /home/edureka/01feb/data/hive_email.txt /user/hive/warehouse/14feb.db/emp/hive_email_manualcopy.txt
+
+
+
+
+##########################
+LOAD data from hdfs File
+##########################
+
+//create table for hdfs
+create table emphdfs(name string, salary float,dep string)
+row format delimited
+fields terminated by ',';
+
+
+
+hadoop fs -put hive_emphdfs.txt /batch/<<batch>>/data/hive_emphdfs.txt 
+
+load data inpath '/batch/<<batch>>/data/hive_emphdfs.txt' into table emphdfs;
+
+
+hadoop fs -put hive_emphdfs.txt /batch/01feb/data/hive_emphdfs.txt 
+
+load data inpath '/batch/01feb/data/hive_emphdfs.txt' into table emphdfs;
+
+hadoop fs -put hive_emphdfs.txt /user/hive/warehouse/11may.db/emphdfs/hive_emphdfs_directput.txt 
+
+
+
+
+//above command will load data from hdfs and will result in moving data.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+describe extended emp;
+
+describe extended emphdfs;
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+what happens if the structure is not correct? Eg: if one record is like (ramya800000,ADMIN)
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+######################################
+Hive using MR
+####################
+
+select * from emp;
+
+select count(*) from emp;
+//count needs processing so MR will get executed;
+
+
+
+#######################################
+external table
+############################
+
+//create external table
+create external table empexternal(name string, salary float,dep string)
+row format delimited
+fields terminated by ','
+location '/batch/<<batch>>/data/hivedata';
+
+
+create external table empexternal(name string, salary float,dep string)
+row format delimited
+fields terminated by ','
+location '/batch/01feb/data/hivedata';
+
+describe extended empexternal;
+
+hadoop dfs -put hive_emphdfs.txt /batch/01feb/data/empexternal.txt 
+
+load data inpath '/batch/01feb/data/empexternal.txt' into table empexternal;
+
+
+
+select * from empexternal;
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/batch/sep01/data/hivedata/empexternal.txt
+
+
+//external table refering to existing location.
+
+//create external table
+create external table empexternal2(name string, salary float,dep string)
+row format delimited
+fields terminated by ','
+location '/batch/<<batch>>/data/hivedata';
+
+create external table empexternal2(name string, salary float,dep string)
+row format delimited
+fields terminated by ','
+location '/batch/01feb/data/hivedata';
+
+
+
+select * from empexternal2;
+
+
+
+
+###########################
+Drop table external/internal
+############################
+//Drop table - what happens
+drop table empdfs;
+drop table empexternal;
+drop table empexternal2;
+
+//drop external table wont delete the data
+
+###############################
+Internal Tables (Managed Tables)
+################################
+
+1) Data wil be maintained in warehouse directory (hive.metastore.warehouse.dir)
+2) Drop the table - removes the complete data of table from hdfs and removes schema from metastore
+
+###############################
+External Tables
+###############################
+1) Data will be maintained in the location specified while creation
+2) Drop the table will remove only schema from metastore
+
+~~~~~~~~~~~~~~~~~~~~~
+other exectuion ways (Before executing this makes sure hive shell is not open. With embedded db, only one connection can exists at any point of time.
+
+hive -e "show databases;"
+
+hive -e "select * from oct25.emphdfs;"
+
+hive -f <filepath> executes one or more sql queries from a file
+
+
+
+
+########################
+manual partition
+####################
+
+
+create table employeepartition(name string, salary float, dept string)
+partitioned by (country string, state string)
+row format delimited
+fields terminated by ',';
+
+//hive_emplTN.txt
+//hive_emplKA.txt
+//hive_emplKL.txt
+
+
+load data local inpath '/home/edureka/01feb/data/hive_emplTN.txt' into table employeepartition
+partition(country='INDIA', state='TN');
+
+load data local inpath '/home/edureka/01feb/data/hive_emplKA.txt' into table employeepartition
+partition(country='INDIA', state='KA');
+
+load data local inpath '/home/edureka/01feb/data/hive_emplKL.txt' into table employeepartition
+partition(country='INDIA', state='KL');
+
+
+//check
+load data local inpath '/home/edureka/01feb/data/hive_emplCK.txt' into table employeepartition;
+
+//where without partitioned data
+select * from employeepartition where dept='IT';
+
+//where with partitioned data
+select * from employeepartition where state='KA';
+
+select count(*) from employeepartition where state='KA';
+
+hadoop dfs -put hive_emplKA.txt /user/hive/warehouse/11may.db/employeepartition/country=INDIA/state=KA/hive_emplKA1.txt
+
+
+~~~~~~~~~~~~~~~~`
+25-05-2015
+~~~~~~~~~~~~~~~~~
+
+###########################
+Dynamic partition
+###########################
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+
+A. Create Database
+------------------
+create database retail1;
+
+B. Select Database
+------------------
+use retail1;
+
+C. Create table for storing transactional records
+-------------------------------------------------
+create table txnrecords(txnno INT, txndate STRING, custno INT, amount DOUBLE, 
+category STRING, product STRING, city STRING, state STRING, spendby STRING)
+row format delimited
+fields terminated by ','
+stored as textfile;
+
+//other store formats : sequencefiles/avro files
+
+
+
+D. Load the data into the table
+-------------------------------
+//txns1.txt
+
+LOAD DATA LOCAL INPATH '/home/edureka/01feb/data/txns' OVERWRITE INTO TABLE txnrecords;
+LOAD DATA LOCAL INPATH '/home/edureka/01feb/data/txns1.txt' OVERWRITE INTO TABLE txnrecords;
+
+
+E. Describing metadata or schema of the table
+---------------------------------------------
+describe txnrecords;
+
+F. Counting no of records
+-------------------------
+select count(*) from txnrecords;
+
+G. Counting total spending by category of products
+--------------------------------------------------
+select category, sum(amount) from txnrecords group by category;
+
+select category, round(sum(amount),2) from txnrecords group by category;
+
+H. 10 customers
+--------------------
+select custno, sum(amount) from txnrecords group by custno limit 10;
+
+select custno, round(sum(amount),2) from txnrecords group by custno limit 10;
+
+I. Create partitioned table
+---------------------------
+create table txnrecsByCat(txnno INT, txndate STRING, custno INT, amount DOUBLE,
+product STRING, city STRING, state STRING, spendby STRING)
+partitioned by (category STRING)
+clustered by (state) INTO 10 buckets
+row format delimited
+fields terminated by ','
+stored as textfile;
+
+//Dynamic partition
+
+// Bucket - to decompose data for sampling. same value will go to same bucket only.
+
+J. Configure Hive to allow partitions
+-------------------------------------
+
+However, a query across all partitions could trigger an enormous MapReduce job if the table data and number of partitions are large. A highly suggested safety measure is putting Hive into strict mode, which prohibits queries of partitioned tables without a WHERE clause that filters on partitions. You can set the mode to nonstrict, as in the following session:
+
+set hive.exec.dynamic.partition.mode=nonstrict;
+set hive.exec.dynamic.partition=true;
+set hive.enforce.bucketing=true;
+set mapred.reduce.tasks = 10;
+
+K. Load data into partition table
+----------------------------------
+from txnrecords txn INSERT OVERWRITE TABLE txnrecsByCat PARTITION(category)
+select txn.txnno, txn.txndate,txn.custno, txn.amount,txn.product,txn.city,txn.state,
+txn.spendby, txn.category;
+
+#Distribute by category requiredin gen1 only.
+from txnrecords txn INSERT OVERWRITE TABLE txnrecsByCat PARTITION(category)
+select txn.txnno, txn.txndate,txn.custno, txn.amount,txn.product,txn.city,txn.state,
+txn.spendby, txn.category DISTRIBUTE BY state;
+
+//In insert... select queries the dynamic partition columns must be specified last among the columns in the SELECT 
+//statement and in the same order in which they appear in PARTITION() clause
+
+//Distribute by category makes sure same key goes to the same reducer.
+
+
+//sample with two column partition
+//Eg: 	insert overwrite table T partition (ds,hr)
+//	select key,value,ds,hr from srcpart where ds is not null and hr>10;
+
+
+
+#############################
+//Handson Start
+########################
+
+
+==========================
+find sales based on age group 
+==========================
+
+create table customer(custno string, firstname string, lastname string, age int,profession string)
+row format delimited
+fields terminated by ',';
+
+load data local inpath '/home/edureka/01feb/data/custs' into table customer;
+
+select count(*) from customer;
+
+create table out1 (custno int,firstname string,age int,profession string,amount double,product string)
+row format delimited                                                                                  
+fields terminated by ',';   
+
+insert overwrite table out1                                                                           
+select a.custno,a.firstname,a.age,a.profession,b.amount,b.product                                     
+from customer a JOIN txnrecords b ON a.custno = b.custno;     
+
+select * from out1 limit 100;
+
+create table out2 (custno int,firstname string,age int,profession string,amount double,product string, level string)
+row format delimited                                                                                  
+fields terminated by ',';   
+
+insert overwrite table out2
+select * , case
+ when age<30 then 'low'
+ when age>=30 and age < 50 then 'middle'
+ when age>=50 then 'old' 
+ else 'others'
+end
+from out1;
+
+
+select * from out2 limit 100; 
+
+describe out2;  
+
+create table out3 (level string, amount double)                                                                                   
+row format delimited
+fields terminated by ',';
+
+insert overwrite table out3  
+ select level,sum(amount) from out2 group by level;
+
+select * from out3; 
+
+
+
+============================================================
+simple join
+===============================================================
+//hive_employee.txt
+//hive_email.txt
+
+//hive_employee.txt
+swetha,250000,Chennai
+anamika,200000,Kanyakumari
+tarun,300000,Pondi
+anita,250000,Selam
+
+
+//hive_email.txt
+swetha,swetha@gmail.com
+tarun,tarun@edureka.in
+nagesh,nagesh@yahoo.com
+venkatesh,venki@gmail.com
+
+
+create table employee(name string, salary float,city string)
+row format delimited
+fields terminated by ',';
+
+load data local inpath '/home/edureka/01feb/data/hive_employee.txt' into table employee;
+
+select * from employee where name='tarun';
+
+create table mailid (name string, email string)
+row format delimited
+fields terminated by ',';
+
+load data local inpath '/home/edureka/01feb/data/hive_email.txt' into table mailid;
+
+select a.name,a.city,a.salary,b.email from 
+employee a join mailid b on a.name = b.name;
+
+select a.name,a.city,a.salary,b.email from 
+employee a left outer join mailid b on a.name = b.name;
+
+select a.name,a.city,a.salary,b.email from 
+employee a right outer join mailid b on a.name = b.name;
+
+select a.name,a.city,a.salary,b.email from 
+employee a full outer join mailid b on a.name = b.name;
+
+
+###################
+ //Handson - End
+###################
+
+===========================================================================================
+Custom Mapper Code to manipulate unix timestamp
+================================================================================
+
+CREATE TABLE u_data ( userid INT, movieid INT, rating INT, unixtime STRING) 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE; 
+
+1	101	8	1369721454
+2	102	8	1369821454
+3	103	8	1369921454
+4	105	8	1370021454  
+5	106	9	1370021454
+
+****And load it into the table that was just created:
+
+LOAD DATA LOCAL INPATH '/home/edureka/01feb/data/u_data' OVERWRITE INTO TABLE u_data; 
+
+//Count the number of rows in table u_data:
+select * from u_data;
+SELECT COUNT(*) FROM u_data; 
+
+
+****Create weekday_mapper.py:
+//weekday_mapper.py
+
+
+import sys 
+import datetime 
+for line in sys.stdin: 
+	line = line.strip() 
+	userid, movieid, rating, unixtime = line.split('\t') 
+	weekday = datetime.datetime.fromtimestamp(float(unixtime)).isoweekday() 
+	print '\t'.join([userid, movieid, rating, str(weekday)]) 
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+drop u_data_new;
+
+
+
+CREATE TABLE u_data_new (userid INT, movieid INT, rating INT, weekday INT) 
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY '\t'; 
+
+add FILE /home/edureka/01feb/data/weekday_mapper.py; 
+
+****Note that columns will be transformed to string and delimited 
+****by TAB before feeding to the user script, and the standard output 
+****of the user script will be treated as TAB-separated string columns.
+
+****The following command uses the TRANSFORM clause to embed the mapper scripts.
+
+INSERT OVERWRITE TABLE u_data_new SELECT 
+TRANSFORM (userid, movieid, rating, unixtime) 
+USING 'python weekday_mapper.py' 
+AS (userid, movieid, rating, weekday) 
+FROM u_data; 
+
+select * from u_data_new;
+
+
+
+SELECT weekday, COUNT(*) 
+FROM u_data_new 
+GROUP BY weekday;
+
+
+==================================================================================
+
+===========
+UDF
+===========
+
+import java.util.Date;
+import java.text.DateFormat;
+import org.apache.hadoop.hive.ql.exec.UDF; 
+import org.apache.hadoop.io.Text;
+public class UnixtimeToDate extends UDF{
+	public Text evaluate(Text text){
+		if(text==null) return null;
+		long timestamp = Long.parseLong(text.toString());
+		return new Text(toDate(timestamp));
+	}
+	private String toDate(long timestamp) {
+		Date date = new Date (timestamp*1000);
+		return DateFormat.getInstance().format(date).toString();
+	}
+}
+
+javac -classpath /usr/lib/hadoop-0.20/hadoop-core-0.20.2-cdh3u0.jar:/usr/lib/hive/lib/hive-exec-0.7.0-cdh3u0.jar UnixtimeToDate.java
+
+****Pack this class file into a jar: 
+jar -cvf convert.jar UnixtimeToDate.class
+
+****Verify jar using command : 
+jar -tvf convert.jar
+
+
+//counter.txt
+one,1386023259550
+two,1389523259550
+three,1389523259550
+four,1389523259550
+
+create table testing(id string,unixtime string)
+row format delimited
+fields terminated by ',';
+
+load data local inpath '/home/edureka/01feb/data/counter.txt' into table testing;
+
+select * from testing;
+
+one	1386023259550
+two	1389523259550
+three	1389523259550
+four	1389523259550
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+****add this jar in hive prompt
+ADD JAR  /home/edureka/01feb/data/convert.jar;
+
+****Then you create your custom function as follows:
+
+create temporary function userdate as 'UnixtimeToDate';
+
+****Then use function 'userdate' in sql command
+select id,userdate(unixtime) from testing;
+
+OK
+four	3/28/02 8:12 PM
+one	4/30/91 1:59 PM
+two	3/28/02 8:12 PM
+three	3/28/02 8:12 PM
+
+
+====================================================================================
+
+Managing outputs
+~~~~~~~~~~~~~~~~
+
+//Output can be sent to HDFS or to another table
+
+create table results(txnno INT, txndate STRING, custno INT, amount DOUBLE, 
+category STRING, product STRING, city STRING, state STRING, spendby STRING)
+row format delimited
+fields terminated by ','
+stored as textfile;
+
+insert overwrite table results
+select * from txnrecords;
+
+select count(*) from results;
+
+insert overwrite directory '/batch/<<batch>>/output/hiveoutput'
+select * from txnrecords;
+
+insert overwrite directory '/batch/02feb'
+select * from txnrecords;
+
+
+
+===============================================================================
+Health demo
+~~~~~~~~~~~
+
+#exit from hive shell before starting this.
+
+hive -f /home/edureka/01feb/data/myqueries.q
+
+hive -e "select * from healthDB02feb.healthCareSampleDS limit 10;"
+hive -e "select * from healthDB02feb.healthCareSampleDSDeidentified limit 10;"
+
+
+USE healthDBoct25;
+
+select * from healthCareSampleDS limit 10;
+
+select * from healthCareSampleDSDeidentified limit 10;
+
+
+=================================================================
+
+//To Drop database
+
+DROP DATABASE IF EXISTS <<DBNAME>> CASCADE;
+
+~~~~~~~~~~~~~~~~~~~~~~~
+
+https://cwiki.apache.org/confluence/display/Hive/HiveClient#HiveClient-ThriftJavaClient
+
+
+Struct/Array/Map Data types : http://www.bidn.com/blogs/cprice1979/ssas/4608/introduction-to-hive-collections
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%															        
+					    Module08 - DataLoadingTechniques	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+A.  BulkLoad Tab Seperated values
+*********************************
+cust.dat
+
+4000001	Kristina	Chung	55	Pilot
+4000002	Paige	Chen	74	Teacher
+4000003	Sherri	Melton	34	Firefighter
+4000004	Gretchen	Hill	66	Computer hardware engineer
+4000005	Karen	Puckett	74	Lawyer
+4000006	Patrick	Song	42	Veterinarian
+4000007	Elsie	Hamilton	43	Pilot
+4000008	Hazel	Bender	63	Carpenter
+4000009	Malcolm	Wagner	39	Artist
+4000010	Dolores	McLaughlin	60	Writer
+
+
+I.  First you create Table in HBase
+===================================
+create 'cust','cf'
+
+II. To BulkLoad
+===============
+bin/hbase org.apache.hadoop.hbase.mapreduce.ImportTsv 
+-Dimporttsv.columns=HBASE_ROW_KEY,cf:fn,cf:ln,cf:age,cf:prof
+cust cust.dat
+
+
+B.  Load Data from Pig to HBase
+*******************************
+cust.dat
+
+4000001,Kristina,Chung,55,Pilot
+4000002,Paige,Chen,74,Teacher
+4000003,Sherri,Melton,34,Firefighter
+4000004,Gretchen,Hill,66,Computer hardware engineer
+4000005,Karen,Puckett,74,Lawyer
+4000006,Patrick,Song,42,Veterinarian
+4000007,Elsie,Hamilton,43,Pilot
+4000008,Hazel,Bender,63,Carpenter
+4000009,Malcolm,Wagner,39,Artist
+4000010,Dolores,McLaughlin,60,Writer
+
+Installing pig
+--------------
+wget http://psg.mtu.edu/pub/apache/pig/pig-0.11.1/pig-0.11.1.tar.gz
+
+sudo tar -xvf pig-0.11.1.tar.gz
+
+Pig Script (scripts.pig) 
+========================
+raw_data = LOAD '/cust.dat' USING PigStorage( ',' ) AS (listing_id: chararray,fname: chararray,lname: chararray);
+dump raw_data;
+STORE raw_data INTO 'hbase://sample_names' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('info:fname,info:lname');
+
+pig command
+===========
+PIG_CLASSPATH=/usr/lib/hbase/hbase-0.90.1-cdh3u0.jar:/usr/lib/hbase/lib/zookeeper.jar pig-0.11.1/bin/pig scripts.pig
+
+
+
+
+
+C. To access data from hive in java program
+*******************************************
+//First run thrift server
+//HIVE_PORT=10000 sudo <hive_home>/bin/hive --service hiveserver
+//include lib files from hive 
+
+package hivetest;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+public class HiveTutorialJdbcClient 
+{
+	private static String driverName = "org.apache.hadoop.hive.jdbc.HiveDriver";
+     
+     public static void main(String[] args) throws SQLException
+{
+    	 Statement stmt = null;
+    	 System.out.println("Hive testing program");
+
+          try {
+               Class.forName (driverName);
+          } 
+          catch (ClassNotFoundException e) {
+        	  System.out.println("Inside class exception");
+               e.printStackTrace();
+               System.exit(1);
+          }
+          // Provide appropriate user and password information below.
+        	  try{
+          Connection con = DriverManager.getConnection (
+                    "jdbc:hive://localhost:10000/default", "", "");
+    	  
+            stmt = con.createStatement();
+    	  }catch(Exception e){
+    		  System.out.println("Caught exception :" + e);
+    		  System.exit(1);
+    	  }
+          System.out.println("Print Name and Address from table employee");
+ResultSet resultSet = stmt.executeQuery("select * from employee");
+	while(resultSet.next()){
+		System.out.println("Name : "+ resultSet.getString("name"));
+		System.out.println("Address : "+ resultSet.getString("addr"));
+	}
+     }
+}
+
+
+D. Data loading from HBase table to Hive
+*****************************************
+
+//create a table in HBase
+//Note: This example sets table property of hive to hbase table. 
+//Any updation in hbase table will automatically reflect in hive table
+
+hbase shell
+create 'employee','personal'
+put 'employee','emp1','personal:name','Tejas'
+put 'employee','emp1','personal:age','40'    
+put 'employee','emp2','personal:name','Revathi'
+put 'employee','emp2','personal:age','35'      
+quit
+
+sudo hive
+use test1;
+create external table testemp(rowkey string,name string,age int)
+stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+with SERDEPROPERTIES("hbase.columns.mapping"=":key,personal:name,personal:age")
+TBLPROPERTIES('hbase.table.name'='employee');
+select * from testemp;
+
+
+
+E. Java program for loading Hive table to HBase
+***********************************************
+
+// First run the thrift server in a terminal 
+// HIVE_PORT=10000 sudo /usr/lib/hive/bin/hive --service hiveserver
+
+//This program copies data from table 'emp(id string, name string, age int)' 
+//from test1 database to 'employee' table in HBase with personal as ColFamily 
+package hivetest;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.util.Bytes;
+
+public class HiveTutorialJdbcClient 
+{
+	private static String driverName = "org.apache.hadoop.hive.jdbc.HiveDriver";
+     
+     public static void main(String[] args) throws SQLException, IOException
+{
+    	 Statement stmt = null;
+    	 Configuration config = HBaseConfiguration.create();
+    	 HTable table = new HTable(config, "employee");
+    	 Put p ;
+    	 System.out.println("Hive to HBase Data transfer");
+
+          try {
+               Class.forName (driverName);
+          } 
+          catch (ClassNotFoundException e) {
+        	  System.out.println("Inside class exception");
+               e.printStackTrace();
+               System.exit(1);
+          }
+          // Provide appropriate user and password information below.
+        	  try{
+          Connection con = DriverManager.getConnection (
+                    "jdbc:hive://localhost:10000/test1", "", "");
+    	  
+            stmt = con.createStatement();
+    	  }catch(Exception e){
+    		  System.out.println("Caught exception :" + e);
+    		  System.exit(1);
+    	  }
+          System.out.println("Print Name and Address from table emp");
+	ResultSet resultSet = stmt.executeQuery("select * from test1.emp");
+	while(resultSet.next()){
+		System.out.print("Id : "+ resultSet.getString("id"));
+		System.out.print("	Name : "+ resultSet.getString("name"));
+		System.out.println("	Age : "+ resultSet.getString("age"));
+		p = new Put(Bytes.toBytes(resultSet.getString("id")));
+		p.add(Bytes.toBytes("personal"), Bytes.toBytes("name"),Bytes.toBytes(resultSet.getString("name")));
+		p.add(Bytes.toBytes("personal"), Bytes.toBytes("age"),Bytes.toBytes(resultSet.getString("age")));
+		table.put(p);
+	 }
+    System.out.println("Table Updation Successful");
+  }
+}
+
+
+
+
+
+F. Java program for REST API to HBase
+**************************************
+
+
+To run the Rest Server as a deamon, execute bin/hbase-daemon.sh start|stop
+==========================================================================
+sudo bin/hbase-daemon.sh start rest
+[sudo] password for cloudera: 
+-->starting rest, logging to /usr/lib/hbase/bin/../logs/hbase-root-rest-cloudera-vm.out
+
+
+Use curl to verify
+==================
+curl http://localhost:8080/
+-->employee
+
+curl http://localhost:8080/version
+-->rest 0.0.2 [JVM: Sun Microsystems Inc. 1.6.0_24-19.1-b02] [OS: Linux 2.6.35-28-generic i386] [Server: jetty/6.1.26] [Jersey: 1.4]
+
+Finally
+=======
+sudo /usr/lib/hbase/bin/hbase-daemon.sh stop rest
+
+
+REST Java Client
+================
+
+package hbase;
+
+import java.io.IOException;
+
+import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.ResultScanner;
+import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.rest.client.Client;
+import org.apache.hadoop.hbase.rest.client.Cluster;
+import org.apache.hadoop.hbase.rest.client.RemoteHTable;
+import org.apache.hadoop.hbase.util.Bytes;
+
+public class HRest {
+
+	public static void main(String[] args) throws IOException {
+	Cluster cluster = new Cluster();
+	cluster.add("localhost", 8080);
+	Client client = new Client(cluster);
+	RemoteHTable table = new RemoteHTable(client, "employee");
+	Get get = new Get(Bytes.toBytes("11"));
+	get.addColumn(Bytes.toBytes("personal"), Bytes.toBytes("name"));
+	Result result1 = table.get(get);
+	System.out.println("Get result1: " + result1);
+	Scan scan = new Scan();
+	scan.setStartRow(Bytes.toBytes("11"));
+	scan.setStopRow(Bytes.toBytes("13"));
+	scan.addColumn(Bytes.toBytes("personal"), Bytes.toBytes("name"));
+	ResultScanner scanner = table.getScanner(scan);
+	for (Result result2 : scanner) {
+	System.out.println("Scan row[" + Bytes.toString(result2.getRow()) +
+	"]: " + result2);
+	}
+	}
+	
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+								Module 08 HBase
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+HMaster - Service for HBase
+
+HBase default installation location in CDH3
+cd /usr/lib/hbase
+
+If service not running
+
+sudo bin/start-hbase.sh
+
+//multi tenancy it doesn't support. But multiple namespace can be created and multiple tables can be there within a namespace. ACL not very strong / still not production ready for using namespace for multitenancy. ACL from version >0.92 only. latest version as of now is 0.98
+
+
+
+Hadoop2 start
+~~~~~~~~~~~~~
+
+cd /usr/lib/hbase-0.96.2-hadoop2/
+
+./bin/start-hbase.sh
+hbase shell
+
+
+In case of exception 
+
+kill -9 PID
+
+i) Kill the daemons HMaster ,HRegionServer , HQuorumPeer if they are running
+ii) cd /usr/lib/hbase-0.96.2-hadoop2/
+iii) sudo rm -r hbasestorage/*
+iv) sudo rm -r logs/*
+v) ./bin/start-hbase.sh
+vi) hbase shell
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+To start HBase
+~~~~~~~~~~~~~~
+hbase shell
+
+exit - to log out;
+
+status - to get quick status
+status 'detailed'
+
+//check version
+version - to check version
+
+list
+
+disable 'blog'
+
+drop 'blog'
+
+//create blog
+create 'blog' , {NAME=>'info'},{NAME=>'content'}
+
+//scan
+
+scan 'blog'
+
+
+//above title is column in 'info' column family
+put 'blog', 'kumar-1','info:title', 'architect'
+
+put 'blog', 'kumar-1','info:location', 'chennai'
+
+put 'blog', 'kumar-1','info:country', 'india'
+
+put 'blog', 'kumar-1','info:z', 'sort test last'
+
+put 'blog', 'kumar-1','info:a', 'sort test first'
+
+put 'blog', 'kumar-1','content:course', 'bigdata'
+
+put 'blog', 'kumar-1','content:comment', 'Enjoy bigdata'
+
+
+//another key
+put 'blog', 'anand-1','info:location', 'achennai'
+put 'blog', 'anand-1','info:country', 'aindia'
+put 'blog', 'anand-1','info:z', 'asort test last'
+put 'blog', 'anand-1','info:a', 'asort test first'
+put 'blog', 'anand-1','content:course', 'abigdata'
+put 'blog', 'anand-1','content:comment', 'aEnjoy bigdata'
+
+//will show sorted data
+scan 'blog' 
+
+put 'blog', 'janu-1','info:lodcation', 'bchennai'
+put 'blog', 'janu-1','info:country', 'bindia'
+put 'blog', 'janu-1','info:z', 'bsort test last'
+put 'blog', 'janu-1','info:a', 'bsort test first'
+put 'blog', 'janu-1','content:maincourse', 'bbigdata'
+put 'blog', 'janu-1','content:backupcourse', 'cloud'
+put 'blog', 'janu-1','content:maincomment', 'bEnjoy bigdata'
+put 'blog', 'janu-1','content:backupcomment', 'bEnjoy bigdata'
+
+
+put 'blog', 'malar-1','info:location', 'achennai'
+put 'blog', 'malar-1','info:country', 'aindia'
+put 'blog', 'malar-1','info:z', 'asort test last'
+put 'blog', 'malar-1','info:a', 'asort test first'
+put 'blog', 'malar-1','content:course', 'abigdata'
+put 'blog', 'malar-1','content:comment', 'aEnjoy bigdata'
+
+put 'blog', 'varun','info:location', 'achennai'
+put 'blog', 'varun','info:country', 'aindia'
+put 'blog', 'varun','info:z', 'asort test last'
+put 'blog', 'varun','info:a', 'asort test first'
+put 'blog', 'varun','content:course', 'abigdata'
+put 'blog', 'varun','content:comment', 'aEnjoy bigdata'
+
+put 'blog', 'krish','info:location', 'achennai'
+put 'blog', 'krish','info:country', 'aindia'
+put 'blog', 'krish','info:z', 'asort test last'
+put 'blog', 'krish','info:a', 'asort test first'
+put 'blog', 'krish','content:course', 'abigdata'
+put 'blog', 'krish','content:comment', 'aEnjoy bigdata'
+put 'blog', 'krish','content:Comment', 'aEnjoy bigdataCAP'
+
+
+
+scan 'blog'
+// these rec will get inserted in the middle.
+
+//count rows in table
+
+count 'blog'
+
+count 'blog',{INTERVAL=>2}
+
+count 'blog',{INTERVAL=>3}
+
+//first column is always like primary key
+
+get 'blog','krish'
+
+get 'blog','krish',{COLUMN=>['info:location','content:course']}
+
+get 'blog','krish',{COLUMN=>['info:location','content:course','content:notinlist']}
+
+get 'blog','krish',{COLUMN=>['info:location']}
+
+//default number of versions : 1
+alter 'blog', {NAME => 'info', VERSIONS => 3}
+alter 'blog',{NAME=>'anotherfamily',VERSIONS=>5}
+
+
+put 'blog','krish','info:location', 'bangalore'
+
+put 'blog','krish','info:location', 'mumbai'
+
+put 'blog','krish','info:location', 'mumbai2'
+
+put 'blog','krish','info:location', 'mumbai3'
+
+put 'blog','krish','info:location', 'mumbai4'
+
+put 'blog','krish','info:location', 'mumbai5'
+
+put 'blog','krish','info:location', 'chennai'
+
+get 'blog','krish',{COLUMN=>'info:location',VERSIONS => 3}
+
+get 'blog','varun',{COLUMN=>'info:location',VERSIONS=>2}
+
+get 'blog','krish',{COLUMN=>'info:location',TIMESTAMP=>1424964257915}
+
+get 'blog','krish',{COLUMN=>'info:location',TIMESTAMP=>1409079963846}
+
+
+
+scan 'blog', {STARTROW=>'krish',STOPROW=>'varun'}
+
+scan 'blog', {VERSIONS => 3}
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~
+Other useful commands
+
+// check table status
+
+is_enabled 'blog'
+
+
+
+//list of tables
+
+list
+
+//delete
+//specific version of a column
+delete 'table','row identifier','columnfamily:column name',timestamp
+
+
+
+//add another family
+
+//disable 'blog'
+
+//add another column family
+
+alter 'blog' , {NAME=>'anotherfamily'}
+
+alter 'blog',{NAME=>'anotherfamily',VERSIONS=>5}
+
+//enable 'blog'
+put 'blog', 'varun','anotherfamily:newcolumn', 'included this column family'
+
+put 'blog', 'varun','familynothere:test2', 'this family doesnt exists'
+
+alter 'blog' , {NAME=>'anotherfamily1'}
+
+put 'blog', 'varun','anotherfamily1:newcolumn', 'included this column family without disable'
+
+get 'blog','varun'
+
+//delete column family //diable before doing this
+disable 'blog'
+alter 'blog',{NAME=>'anotherfamily',METHOD=>'delete'}
+enable 'blog'
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+###################################################
+disable 'scores1'
+drop 'scores1'
+
+//run HBaseTest.java
+###################################################
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//Data Loading Techniques
+
+//Load tsv from loal file system to HBase with CLI
+
+disable 'emp'
+drop 'emp'
+
+
+
+hadoop dfs -put /home/edureka/01feb/data/hbase_upload.tsv /batch/<<batch>>/data/hbase_upload.tsv
+
+hadoop dfs -put /home/edureka/01feb/data/hbase_upload.tsv /batch/oct25/data/hbase_upload.tsv
+
+
+1	kumar	muthu
+2	nila	kumar
+3	Mohammad	rafi
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+cd /usr/lib/hbase
+cd /usr/lib/hbase-0.96.2-hadoop2/
+
+create 'emp','cf'
+
+bin/hbase org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.columns=HBASE_ROW_KEY,cf:fn,cf:ln emp /batch/<<batch>>/data/hbase_upload.tsv
+bin/hbase org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.columns=HBASE_ROW_KEY,cf:fn,cf:ln emp /batch/oct25/data/hbase_upload.tsv
+
+
+scan 'emp'
+
+#################################################################
+
+disable 'customers1'
+drop 'customers1'
+
+create 'customers1','info'
+
+count 'customers1'
+
+
+HADOOP_CLASSPATH=`${HBASE_HOME}/bin/hbase classpath` hadoop jar /usr/lib/hbase-0.96.2-hadoop2/lib/hbase-server-0.96.2-hadoop2.jar importtsv -Dimporttsv.separator=, -Dimporttsv.bulk.output=output2 -Dimporttsv.columns=HBASE_ROW_KEY,info:id,info:fname,info:lname,info:age,info:prof customers1 /user/edureka/custs
+
+HADOOP_CLASSPATH=`${HBASE_HOME}/bin/hbase classpath` hadoop jar /usr/lib/hbase-0.96.2-hadoop2/lib/hbase-server-0.96.2-hadoop2.jar completebulkload /user/edureka/output2 customers1
+
+Run GetListExample.java
+
+#######################################################
+create 'testtable','colfam1'
+########################################################
+Data Loading with Sqoop
+//Load data from /mysql table to HDFS/mysql table to HBAse table/HDFS to mysql table
+
+
+//test data
+
+CREATE TABLE `employee` (
+	`empid` VARCHAR(50) NULL DEFAULT NULL,
+	`fname` VARCHAR(50) NULL DEFAULT NULL,
+	`lname` VARCHAR(50) NULL DEFAULT NULL
+)
+COLLATE='utf8_general_ci'
+ENGINE=InnoDB;
+
+CREATE TABLE `employeeexport` (
+	`empid` VARCHAR(50) NULL DEFAULT NULL,
+	`fname` VARCHAR(50) NULL DEFAULT NULL,
+	`lname` VARCHAR(50) NULL DEFAULT NULL
+)
+COLLATE='utf8_general_ci'
+ENGINE=InnoDB;
+
+INSERT INTO `employee` (`empid`, `fname`, `lname`) VALUES ('1', 'kumar', 'muthu');
+INSERT INTO `employee` (`empid`, `fname`, `lname`) VALUES ('2', 'nila', 'pen');
+INSERT INTO `employee` (`empid`, `fname`, `lname`) VALUES ('3', 'mohammad', 'rafi');
+
+install mysql for windows
+
+connector  - http://dev.mysql.com/downloads/connector/j/
+
+add mysql jar to /usr/lib/sqoop/lib
+
+mysql execute
+
+grant all privileges on *.* to root@192.168.1.2 IDENTIFIED BY 'root' WITH GRANT OPTION;
+
+hadoop fs -rmr /batch/aug18/sqoop
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+cd /usr/lib/sqoop-1.4.4
+
+//import data from mysql to hdfs
+bin/sqoop import --connect jdbc:mysql://192.168.1.10/test --table employee --username root -P --target-dir /batch/oct25/sqoop22 -m 1
+
+
+disable 'sqooptable'
+drop 'sqooptable'
+
+//import data from mysql to hbase table 
+bin/sqoop import --connect jdbc:mysql://192.168.1.10/test --table employee --username root -P --hbase-table sqooptable2 --column-family myfamily --hbase-row-key empid --hbase-create-table -m 1
+
+
+//import data from hdfs to mysql
+
+bin/sqoop export --connect jdbc:mysql://192.168.1.10/test --table employeeexport --username root -P --export-dir /batch/oct25/sqoop22
+
+//More data loading technique at DataLoadingTechniques_Practicals.txt
+
+
+#############################################################################
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~``
+// Data loading with Pig script (load file from HDFS to HBase using Pig)
+
+http://archive.apache.org/dist/pig/pig-0.11.1/pig-0.11.1.tar.gz
+sudo tar -xvf pig-0.11.1.tar.gz
+
+
+
+
+hbase_input.csv
+
+1, muthu, kumar
+2, nila, kumar
+3, Mohammad, rafi
+
+
+hadoop dfs -put /home/edureka/01feb/data/hbase_input.csv /batch/oct25/data/hbase_input.csv
+
+
+//HBase table - 
+
+disable 'sample_names'
+
+drop 'sample_names'
+
+
+//scripts.pig
+REGISTER /usr/lib/hbase-0.96.2-hadoop2/lib/zookeeper*.jar;
+
+REGISTER /usr/lib/hbase-0.96.2-hadoop2/lib/hbase-*.jar;
+
+raw_data = LOAD '/batch/oct25/data/hbase_input.csv' USING PigStorage(',') AS (listing_id: chararray, fname: chararray, lname: chararray);
+dump raw_data;
+STORE raw_data INTO 'hbase://sample_names' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('info:fname,info:lname');
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+create 'sample_names','info'
+
+pig /home/edureka/01feb/data/hbase/scripts.pig
+
+PIG_CLASSPATH=/usr/lib/hbase-0.96.2-hadoop2/lib/zookeeper*.jar:/usr/lib/hbase-0.96.2-hadoop2/lib/hbase-*.jar pig /home/edureka/01feb/data/hbase/scripts.pig
+
+
+export PIG_CLASSPATH=$PIG_HOME/pig-0.12.0-withouthadoop.jar:$HBASE_HOME/hbase-0.94.1.jar:$HBASE_HOME/lib/*:$HADOOP_COMMON_LIB_NATIVE_DIR/lib/*:$PIG_CLASSPATH
+
+//run in hbase shell
+scan 'sample_names'
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+								Module08-ZooKeeper:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+hbase zkcli
+
+help
+
+ls /
+ls /hbase
+
+ls /zookeeper
+
+ls /hbase/root-region-server
+ls /hbase/meta-region-server
+
+get /hbase/root-region-server
+get /hbase/meta-region-server
+
+cloudera-vm:35141	- Servername
+cZxid = 0x1c		- Zookeeper transaction id - 
+ctime = Sat Aug 30 00:08:45 PDT 2014 - Creation time of the above transaction
+mZxid = 0x1c		- Modifcation id	
+mtime = Sat Aug 30 00:08:45 PDT 2014	- Modification Time
+pZxid = 0x1c
+cversion = 0		- Created version of the node
+dataVersion = 0		- Data Version
+aclVersion = 0		- ACL Version
+ephemeralOwner = 0x0	- 
+dataLength = 17
+numChildren = 0
+
+
+get /hbase/rs
+
+ls /hbase/rs
+
+
+
+get /hbase/rs/cloudera-vm,49497,1411643054500
+get /hbase/rs/localhost,60020,1416646550930
+
+get /hbase/master
+
+//Create Znode
+create /zk_testoct testoct
+
+ls /
+
+get /zk_testoct
+
+set /zk_testaug zk_mod_val
+
+
+get /zk_testaug
+
+
+//attach watcher
+//effective only for one notification
+ls /zk_testaug true
+
+
+create /zk_testaug/child1 'child1'
+
+create /zk_testaug/child2 'child2'
+
+ls /zk_testaug true
+
+create /zk_testaug/child3 'child3'
+
+get /zk_testaug
+
+
+//create ephemeral znode
+create -e /zk_testaug/enode 'enodetest'
+
+ls /zk_testaug
+
+get /zk_testaug/enode
+
+
+delete /zk_test
+
+ls /
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+					Module09-sqoop_data_loading_methods
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+Source : Apache Sqoop Cookbook by Kathleen Ting & Jarek Jarecec Cecho
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Import with where codition
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+sqoop import \
+--connect jdbc:mysql://mysql.example.com/sqoop \
+--username sqoop \
+--password sqoop \
+--table cities \
+--where "country = 'USA'"
+
+
+Import as sequence file
+~~~~~~~~~~~~~~~~~~~~~~~
+
+sqoop import \
+--connect jdbc:mysql://mysql.example.com/sqoop \
+--username sqoop \
+--password sqoop \
+--table cities \
+--as-sequencefile
+
+Compressing import data - default GZip. --compression-codec for other formats
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+sqoop import \
+--connect jdbc:mysql://mysql.example.com/sqoop \
+--username sqoop \ 
+--table cities \
+--compress
+
+Running concurrent tasks
+~~~~~~~~~~~~~~~~~~~~~~~~
+sqoop import \
+--connect jdbc:mysql://mysql.example.com/sqoop \
+--username sqoop \
+--password sqoop \
+--table cities \
+--num-mappers 10
+
+Import all tables and table exclude option
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+sqoop import-all-tables \
+--connect jdbc:mysql://mysql.example.com/sqoop \
+--username sqoop \
+--password sqoop \
+--exclude-tables cities,countries
+
+Conditional append incremental
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+sqoop import \
+--connect jdbc:mysql://mysql.example.com/sqoop \
+--username sqoop \
+--password sqoop \
+--table visits \
+--incremental append \
+--check-column id \
+--last-value 1
+
+Importing joined data
+~~~~~~~~~~~~~~~~~~~~~
+
+sqoop import \
+--connect jdbc:mysql://mysql.example.com/sqoop \
+--username sqoop \
+--password sqoop \
+--query 'SELECT normcities.id, \
+countries.country, \
+normcities.city \
+FROM normcities \
+JOIN countries USING(country_id) \
+WHERE $CONDITIONS' \
+--split-by id \
+--target-dir cities
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+					Module10-Oozie practicals with edu user
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+cd /usr/lib/oozie-4.0.0/
+
+./bin/oozie-stop.sh
+
+
+sudo gedit /usr/lib/hadoop-2.2.0/etc/hadoop/core-site.xml
+
+
+sudo service hadoop-master stop
+sudo service hadoop-master start
+hadoop dfsadmin -safemode leave
+
+
+
+
+Use jobTracker port as 8032
+sudo gedit Desktop/LMS/Oozie/WordCountTest/job.properties
+sudo gedit Desktop/LMS/Oozie/WordCountTest/workflow.xml
+
+sudo gedit job.properties
+sudo gedit workflow.xml
+
+
+
+sudo chmod -R 777 /usr/lib/oozie-4.0.0
+sudo chown -R edureka /usr/lib/oozie-4.0.0
+
+cd /usr/lib/oozie-4.0.0/
+
+./bin/oozie-start.sh
+
+
+hadoop fs -rmr /oozieout/out1
+
+oozie job -oozie http://localhost:11000/oozie -config /home/edureka/01feb/data/Oozie/WordCountTest/job.properties -run
+
+
+oozie job -oozie http://localhost:11000/oozie -info 0000001-150315072457093-oozie-edur-W
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+							Module10-Oozie Practicals
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create application
+==================
+
+1. Create a directory for oozie job ( WordCountTest )
+
+2. Write application and create the jar
+   Move this jar to lib folder in WordCountTest directory.
+
+3. job.properties  and workflow.xml inside WordCountTest directory.
+
+4. Move this directory to hdfs.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+To bring Oozie web console in CDH  ( Oozie directory   -- /usr/lib/oozie )
+=====================================================
+1. download ext-2.2.zip
+
+
+2. 
+create oozie user
+
+sudo chown -R oozie:oozie /usr/lib/oozie-4.0.0
+
+If oozie is running stop it (First time stop it as root)
+
+sudo -u oozie bin/oozie-stop.sh
+
+Stop as root
+~~~~~~~~~~~~
+sudo bin/oozie-stop.sh
+sudo chown -R oozie:oozie /usr/lib/oozie
+
+If error occured
+~~~~~~~~~~~~~~~~
+cat /var/run/oozie/oozie.pid
+
+if process id gives error - rm /var/run/oozie/oozie.pid
+
+
+3. sudo -u oozie /usr/lib/oozie/bin/oozie-setup.sh -extjs path_to_ext-2.2.zip
+
+sudo -u oozie /usr/lib/oozie/bin/oozie-setup.sh -extjs /home/cloudera/oozie/ext-2.2.zip
+
+4. start -u oozie bin/oozie-start.sh
+
+sudo -u oozie /usr/lib/oozie-4.0.0/bin/oozie-start.sh
+
+5. browse http://localhost:11000/oozie
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+for version 2
+cd /usr/lib/oozie-4.0.0/
+
+/usr/lib/oozie-4.0.0/bin/oozie-start.sh
+
+/usr/lib/oozie-4.0.0/bin/oozie-stop.sh
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+3. Running the application
+=========================
+Goto Oozie directory
+
+oozie job -oozie http://localhost:11000/oozie -config job.properties -run
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+//Stop and start command
+sudo -u oozie /usr/lib/oozie-4.0.0/bin/oozie-stop.sh
+sudo -u oozie /usr/lib/oozie/bin/oozie-setup.sh -extjs /home/cloudera/oozie/ext-2.2.zip
+sudo -u oozie /usr/lib/oozie-4.0.0/bin/oozie-start.sh
+http://localhost:11000/oozie
+
+
+
+hadoop fs -rmr WordCountTest
+
+hadoop fs -rmr /data/input
+
+hadoop fs -rmr /oozieout/out1
+
+hadoop fs -put /home/edureka/01feb/data/Oozie/WordCountTest WordCountTest
+
+hdfs dfs -mkdir /data
+
+hdfs dfs -mkdir /oozieout
+
+hadoop fs -put /home/edureka/01feb/data/fearnomore.txt /data/fearnomore.txt
+
+/usr/lib/oozie-4.0.0/bin/oozie job -oozie http://localhost:11000/oozie -config /home/edureka/01feb/data/Oozie/WordCountTest/job.properties -run
+
+oozie job -oozie http://localhost:11000/oozie -config job.properties -run
+
+/usr/lib/oozie-4.0.0/bin/oozie job -oozie http://localhost:11000/oozie -config  /home/edureka/Desktop/LMS/Oozie/WordCountTest/job.properties -run
+
+/usr/lib/oozie-4.0.0/bin/oozie job -oozie http://localhost:11000/oozie -config  /home/edureka/Desktop/LMS/Oozie/WordCountTest/job.properties -run
+
+oozie job -oozie http://localhost:11000/oozie -info 0000000-150227211619268-oozie-oozi-W
+
+oozie job -oozie http://localhost:11000/oozie -log 0000000-150227211619268-oozie-oozi-W
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Time based coordinator
+
+hadoop fs -rmr WordCountTest_TimeBased
+
+hadoop fs -put /home/edureka/01feb/data/Oozie/WordCountTest_TimeBased WordCountTest_TimeBased
+
+oozie job -oozie http://localhost:11000/oozie -config coordinator.properties -run
+
+oozie job -oozie http://localhost:11000/oozie -info 0000002-150227115347259-oozie-oozi-C
+
+oozie job -oozie http://localhost:11000/oozie -suspend 0000002-150227115347259-oozie-oozi-C
+
+oozie job -oozie http://localhost:11000/oozie -resume 0000002-150227115347259-oozie-oozi-C
+
+oozie job -oozie http://localhost:11000/oozie -kill 0000002-150227115347259-oozie-oozi-C
+
+https://github.com/yahoo/oozie/wiki/Oozie-Coord-Use-Cases
+
+http://www.ibm.com/developerworks/library/bd-ooziehadoop/
+
+http://oozie.apache.org/docs/3.2.0-incubating/WorkflowFunctionalSpec.html#Appendix_B_Workflow_Examples
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+temp
+
+cat /usr/lib/oozie-4.0.0/oozie-server/temp/oozie.pid
+rm /usr/lib/oozie-4.0.0/oozie-server/temp/oozie.pid
+
+
+sudo -u oozie /usr/lib/oozie-4.0.0/bin/oozie-setup.sh -extjs /usr/lib/oozie-4.0.0/libext/ext-2.2.zip
+
+
+
+######################################################################################################
+###########################################  Books    ################################################
+######################################################################################################
+
+
+
+Few use cases and nice web sites
+
+1) http://www.skyboximaging.com/ - Image Processing
+2) http://www.cityofboston.gov/DoIT/apps/streetbump.asp - Streetbump. Mapping the potholes using crowd sourcing
+3) https://www.innocentive.com/ - Incentives for innovative ideas
+4) http://gsis.mediacore.tv/media/bbc-horizon-the-age-of-big-data - BBC Horizon: Age of Big Data
+5) http://www.forbes.com/sites/kashmirhill/2012/02/16/how-target-figured-out-a-teen-girl-was-pregnant-before-her-father-did/ - How Target Figured Out A Teen Girl Was Pregnant Before Her Father Did
+6) 
+
+
+Powered by Hadoop
+1) https://wiki.apache.org/hadoop/PoweredBy
+Difference between Hadoop 1 and Hadoop 2
+http://hadoopbeforestarting.blogspot.in/2012/12/difference-between-hadoop-old-api-and.html
+
+Debugging MapReduce with Eclipse - https://www.youtube.com/watch?v=D6qDOfHx2mo
+
+Useful books related to Hadoop
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Hadoop: The Definitive Guide by Tom White
+Hadoop in Practice by Alex Holmes
+Hadoop mapreduce cookbook by Srinath Perera
+Hadoop Real-World Solutions Cookbook by Jonathan R. Owens, Brian Femiano, Jon Lentz
+Programming Hive by Edward Capriolo, Dean Wampler, Jason Rutherglen
+Programming Pig by Alan Gates
+Professional Hadoop Solutions by Boris Lublinsky, Kevin T. Smith, Alexey Yakubovich -- for Oozie
+https://www.packtpub.com/big-data-and-business-intelligence/pig-design-patterns
+
+
+Hadoop Ecosystem
+~~~~~~~~~~~~~~~~
+https://hadoopecosystemtable.github.io/ - Lists different technology and its references
+
+Apache Pig
+~~~~~~~~~~
+Executing multiple reducers at the same time. : http://pig.apache.org/docs/r0.8.1/cookbook.html#Use+the+Parallel+Features
+
+
+	

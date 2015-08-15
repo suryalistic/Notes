@@ -1,0 +1,12 @@
+Dreaded Maven Error: Could not find or load main class org.codehaus.plexus.classworlds.launcher.Launcher
+I had this little issue on my Mac after installing maven3 and jdk1.7.  Here is what fixed my issue: 
+1) Remove the M2_HOME variable from the path.
+2) Add M3_HOME variable with the path to your maven 3 installation.
+Here is the interesting part: I use symbolic links for versioning.  The values of both M2_HOME and M3_HOME were identical.  Both were /Developer/maven.  Hence it appears that the name M2_HOME in place of M3_HOME is what actually causes the issue.
+
+
+new prject:
+mvn archetype:generate -DgroupId={project-packaging} 
+   -DartifactId={project-name} 
+   -DarchetypeArtifactId=maven-archetype-quickstart 
+   -DinteractiveMode=false

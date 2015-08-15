@@ -1,0 +1,65 @@
+To install svn client on os x:
+1. install xcode from app store
+2. install homebrew package manager.
+
+
+
+Users:
+mmohale/mmohale
+svojjala/krishna
+
+<http://ec2-54-242-19-183.compute-1.amazonaws.com:80> Subversion Repository
+<http://ec2-54-242-19-183.compute-1.amazonaws.com:80> Subversion Repository
+
+http://ec2-54-242-19-183.compute-1.amazonaws.com/svn/projectryte
+
+
+scp -i myAmazonKey.pem phpMyAdmin-3.4.5-all-languages.tar.gz ec2-user@mec2-50-17-16-67.compute-1.amazonaws.com:~/.
+
+
+
+
+
+
+-------------------------------
+Bitnami installation:
+Security Group
+The vendor recommends using the following security group policies. You will be able to select these settings or configure your own when launching this software.
+
+Connection Method	Protocol	Port Range	Source (IP or Group)
+SSH	tcp	22 - 22	
+0.0.0.0/0
+HTTP	tcp	80 - 80	
+0.0.0.0/0
+HTTPS	tcp	443 - 443	
+0.0.0.0/0
+RDP	tcp	3389 - 3389	
+0.0.0.0/0
+Installation Instructions
+Once the instance is running, enter the public DNS provided by Amazon into your browser. You will then see the BitNami Welcome Page. Click the 'Access my application' link and you can see the Subversion repository.
+Once you add documents to the repository you can browse them there. You can find a quick guide to upload documents to the repository at http://wiki.bitnami.org/Components/Subversion#How_to_start_with_Subversion_in_Amazon_EC2.3f
+
+--------------------------
+username for ssh access to bitnami instance : bitnami.
+
+
+
+
+
+
+
+SVN Eclipse Client install:
+
+Here are instructions how to install latest Subversive:
+1. Install SVN Team Provider
+Update site: 
+http://download.eclipse.org/technology/subversive/0.7/update -site/
+Or
+Archived update site: 
+http://www.eclipse.org/downloads/download.php?file=/technolo gy/subversive/0.7/builds/Subversive-incubation-0.7.8.I200905 06-1500.zip
+
+2. Install SVN Connectors
+update site : http://community.polarion.com/projects/subversive/download/eclipse/3.0/juno-site/
+subversive SVN Connectors
+SVNKit 1.7.5.v1 Implementation
+SVN Team provider connectors source

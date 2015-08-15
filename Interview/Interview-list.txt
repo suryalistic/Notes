@@ -1,0 +1,195 @@
+1.trees
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2.graphs 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3.hashmap vs hashtable
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+4.reverse a linked list (see 14.)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+5.fibonacci series
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+6.binary search
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+7.implement sudoku
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+8.Sort a very large file
+Concept based on merge sort.
+What you need to do is to chunk the files in via a stream and process them separately. Then you can merge 
+the files together as they will already be sorted, this is similar to how merge sort works.
+**Can be used for streaming a large file in Java***
+Sol1:
+External merge sort
+One example of external sorting is the external merge sort algorithm, which sorts chunks that each fit in RAM, 
+then merges the sorted chunks together.[1][2] For example, for sorting 900 megabytes of data using only 100 megabytes of RAM:
+Read 100 MB of the data in main memory and sort by some conventional method, like quicksort.
+Write the sorted data to disk.
+Repeat steps 1 and 2 until all of the data is in sorted 100 MB chunks (there are 900MB / 100MB = 9 chunks),
+which now need to be merged into one single output file.
+Read the first 10 MB (= 100MB / (9 chunks + 1)) of each sorted chunk into input buffers in main memory and allocate the remaining 
+10 MB for an output buffer. (In practice, it might provide better performance to make the output buffer larger and the input buffers slightly smaller.)
+Perform a 9-way merge and store the result in the output buffer. Whenever the output buffer fills, write it to the final sorted file and empty it.
+Whenever any of the 9 input buffers empties, fill it with the next 10 MB of its associated 100 MB sorted chunk until no more data from the chunk is available.
+This is the key step that makes external merge sort work externally -- because the merge algorithm only makes one pass sequentially through each of the chunks, 
+each chunk does not have to be loaded completely; 
+rather, sequential parts of the chunk can be loaded as needed.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+9.resolve deadlock in enqueue and dequeue in linked list
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+10.least common ancestor in tree
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+11.factorial
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+12.5 card draw
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+13.ABCDE x 4 = EDCBA
+Sol1:
+A must be 1 or 2 since any other number would means that the answer would have 6 digit. A also have to be even since 4 time any number is even. thus A is 2. E would have to be 3 or 8. but E cannot be 3 since the last digit have to be 8 or 9. thus E is 8. now 4xB must be less than 10 thus B is one or 2. but A is already 2 thus B is one. 4 x D +3 must end with 1 two possible digit 2 and 7 but 2 already used thus D is 7. 4xC+2 must end with C. two possible numbers 0 and 9. but 0 is not an option thus c=9 
+so the answer is A=2, B=1, C=9, D=7 and E is 8
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+14.How would you write the code to reverse a linked list?
+
+Sol1:
+There's code in one reply that spells it out, but you might find it easier to start from the bottom up, by asking and answering tiny questions (this is the approach in The Little Lisper):
+
+What is the reverse of null (the empty list)? null.
+What is the reverse of a one element list? the element.
+What is the reverse of an n element list? the reverse of the second element on followed by the first element.
+public ListNode Reverse(ListNode list)
+{
+    if (list == null) return null; // first question
+
+    if (list.next == null) return list; // second question
+
+    // third question - in Lisp this is easy, but we don't have cons
+    // so we grab the second element (which will be the last after we reverse it)
+
+    ListNode secondElem = list.next;
+
+    // bug fix - need to unlink list from the rest or you will get a cycle
+    list.next = null;
+
+    // then we reverse everything from the second element on
+    ListNode reverseRest = Reverse(secondElem);
+
+    // then we join the two lists
+    secondElem.Next = list;
+
+    return reverseRest;
+}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
+15.What complexity (big O notation) is reversing a linked list? 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+16.How would you write the code find the subsequence with the maximum sum of n integers?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+17.How would you build a stock ticker service?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+18.Find all the pairs in array that add up to a certain number? 
+
+Sol1:
+An O(N) time and O(1) space solution that works on a sorted array:
+Let M be the value you're after. Use two pointers, X and Y. Start X=0 at the beginning and Y=N-1 at the end. Compute the sum sum = array[X] + array[Y]. If sum > M, then decrement Y, otherwise increment X. If the pointers cross, then no solution exists.
+You can sort in place to get this for a general array, but I'm not certain there is an O(N) time and O(1) space solution in general.
+
+Sol2:
+If you have a sorted array you can find such a pair in O(n) by moving two pointers toward the middle
+
+i = 0
+j = n-1
+while(i < j){
+   if      (a[i] + a[j] == target) return (i, j);
+   else if (a[i] + a[j] <  target) i += 1;
+   else if (a[i] + a[j] >  target) j -= 1;
+}
+return NOT_FOUND;
+The sorting can be made O(N) if you have a bound on the size of the numbers (or if the the array is already sorted in the first place). Even then, a log n factor is really small and I don't want to bother to shave it off.
+
+proof:
+
+If there is a solution (i*, j*), suppose, without loss of generality, that i reaches i* before j reaches j*. Since for all j' between j* and j we know that a[j'] > a[j*] we can extrapolate that a[i] + a[j'] > a[i*] + a[j*] = target and, therefore, that all the following steps of the algorithm will cause j to decrease until it reaches j* (or an equal value) without giving i a chance to advance forward and "miss" the solution.
+
+The interpretation in the other direction is similar.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+19.How would you design a process to populate a set of tables in a database with data if 
+you had no previous information about the tables or their columns?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+20.Race condition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+21.Dining Philosophers problem
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+22.Datastructure for maintaining a pooling mechanism
+Sol1:
+Object Pool is usually a singleton with two collections of objects 
+(e.g. database connections) inside:
+unlocked - for free objects, which can be provided to the client by request
+locked - for locked objects, which are in use now
+This collections can be implemented as Lists or HashTables or something else, 
+depends on your needs. For simple ObjectPool - LinkedList structure will be good enough.
+Sol2:
+http://www.javaworld.com/article/2076690/java-concurrency/build-your-own-objectpool-in-java-to-boost-app-speed.html
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+23.Lowest common ancestor problem with different scenarios.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+24.Producer consumer problem.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+25.Implementation of heap
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+26.implementation of hash table and collision resolving techniques
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+27.You are given a predefined function which generates random number from 1 to 5. 
+You need to use this function and create another function which will generate 
+random number from 1 to 7. Now most important thing is to remember that new random 
+function should be even (i.e. the number generated should be unpredictable, 
+and evenly spaced out).
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+28.display the binary tree in depth first manner   Answer Question
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+29.regular expression for a valid IP address 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+30.Detect if a linked list has a loop
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+31.What data structure would you use for a browser's BACK & FORWARD ability
+Sol1:
+Use Stack(two stacks).
+Back Stack and Forward stack:
+as we navigate forward push the last page onto back stack. 
+when back is hit pop the last and put the current on forward
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+32.There are two threads A and B. B should notify A after completing the task. 
+Write a code using concurancey feature introduced in Java 1.5
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+33.You have a list of numbers from 1-1000, each number only exists once and 
+they are in random order. You randomly take one out. 
+How do you know which is the missing number
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+34.What design pattern would you use to design connection pooling?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+35.Store a million phone numbers.
+Sol1:
+If memory is our biggest consideration, then we don't need to store the number at all, 
+just the delta between i and i+1.
+
+Now if numbers range from 200 0000 - 999 9999, then there are 7,999,999 possible 
+phone numbers. Since we have 1-million numbers, and if we assume that they are 
+uniformly distributed, we have an Expected distance of E = n_i+1 - n_i ~ 8 (3 bits) 
+between sequential numbers n_i and n_i+1. So for a 32-bit int we could potentially 
+store up to 10 sequential offsets (~400kb optimal total memory footprint), however
+ its likely that we'll have some cases where we need an offset greater than 8 
+ (Maybe we have 400, or 1500??). In which case, we can simply reserve the first 2 bits 
+ of the int as a header which tells us what frame size we use to read the bits it stores. 
+ For example, maybe we use: 00 = 3x10, 01 = 5x6, 10 = 7x4, 11 = 1*30.
+ 	
+I really like this comment. For the lay man, what you need to do is sort 
+the numbers from smallest to largest. Store the first number in the list. 
+Then for the next number, only store the difference. So an easy example 
+is a) 555-1234 b) 555-2234. In this case 5552234 - 5551234 = 1000. 
+So your storage would be 5551234,1000,... Great thinking, 
+I think this is what Google would be looking for. they never mentioned access
+ speed but I would have included an alternative answer with this which takes that 
+ into account.
+ 
+ Sol2:
+ A ternary search tree which is a special trie data structure will be memory 
+ efficient and will still enable (as trie) partial matching.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+36. What is Tukey's Ninther?
