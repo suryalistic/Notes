@@ -75,7 +75,29 @@ Install Oracle jdk:
 		Then restart apparmor:
 		sudo /etc/init.d/apparmor restart
 
+**** After install ****
+1.vim /etc/environment
+2. Add JAVA_HOME=/usr/lib/jvm/java-7-oracle
 
+Install MySql Server:
+	sudo apt-get install mysql-server
+Install MongoDb:
+	0.Search the package: sudo apt-cache search mongodb
+	1.Add 10gen package to source.list.d: sudo vim /etc/apt/sources.list.d/mongo.list
+	2.Add the following:
+		##10gen package location
+		deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen
+	3.Add GPG Key:sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
+	4.Update Package: sudo apt-get update
+	5.Install mongodb-10gen: sudo apt-get install mongodb-10gen
+	6.
+	
+Other utilities:
+	vim : sudo apt-get install vim
+	synaptic: sudo apt-get install synaptic
+	open-ssh: sudo apt-get install openssh-server openssh-client  ; sudo /etc/init.d/ssh restart
+	tomcat7: sudo apt-get install tomcat7 
+		after install add JAVA_HOME to /etc/default/tomcat7
 
 Install Flashplayer:
 	For 14.10 version
@@ -84,3 +106,4 @@ Install Flashplayer:
 	sudo add-apt-repository ppa:nilarimogard/webupd8
 	sudo apt-get update
 	sudo apt-get install freshplayerplugin
+	
