@@ -10,10 +10,13 @@ Add a new VirtualVm instance:
 5. Select the VM you just created, go to settings -> Storage -> Controller IDE and click on the CD symbol with Empty written next to it.
 6. In the Right hand side you see Attributes. select the CD Symbol next to it. select the "Choose the Virtual CD/DVD disk file".
 7. point to the Kubuntu ISO file downloaded in step2.
+8.If Os in VM does not open in full screen, need to install the Guest tools. goto devices -> insert guest additions image-> open terminal-> sudo ./VBoxLinuxAdditions.run
+9.Install any required security updates.
 
 
 
 Installation of Java
+Verify if Java or Javac is installed.
 Uninstall Open-jdk:
 	sudo apt-get autoremove openjdk-7-jre
 	sudo apt-get autoremove openjdk-7-jre
@@ -106,4 +109,17 @@ Install Flashplayer:
 	sudo add-apt-repository ppa:nilarimogard/webupd8
 	sudo apt-get update
 	sudo apt-get install freshplayerplugin
+
+Installing Hadoop:
+	Adding a dedicated Hadoop system user:
+		sudo addgroup hadoop
+		sudo adduser --ingroup hadoop hduser
+	Download from apache.org:
+		Hadoop
+		Pig
+		Hive
+		Zookeeper
+		Sqoop
+		Flume
+		Oozie
 	
