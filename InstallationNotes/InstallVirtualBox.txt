@@ -80,10 +80,12 @@ Install Oracle jdk:
 
 **** After install ****
 1.vim /etc/environment
-2. Add JAVA_HOME=/usr/lib/jvm/java-7-oracle
+2. Add JAVA_HOME=/usr/lib/jvm/java-8-oracle
 
 Install MySql Server:
 	sudo apt-get install mysql-server
+Install Tomcat7
+	sudo apt-get install tomcat7 tomcat7-admin tomcat7-common tomcat7-docs tomcat7-examples tomcat7-user
 Install MongoDb:
 	0.Search the package: sudo apt-cache search mongodb
 	1.Add 10gen package to source.list.d: sudo vim /etc/apt/sources.list.d/mongo.list
@@ -95,12 +97,12 @@ Install MongoDb:
 	5.Install mongodb-10gen: sudo apt-get install mongodb-10gen
 	6.
 	
-Other utilities:
+Install Other utilities:
 	vim : sudo apt-get install vim
 	synaptic: sudo apt-get install synaptic
 	open-ssh: sudo apt-get install openssh-server openssh-client  ; sudo /etc/init.d/ssh restart
-	tomcat7: sudo apt-get install tomcat7 
-		after install add JAVA_HOME to /etc/default/tomcat7
+	Chrome browser: sudo apt-get install chromium-browser
+	tomcat7: sudo apt-get install tomcat7 ; after install add JAVA_HOME to /etc/default/tomcat7
 
 Install Flashplayer:
 	For 14.10 version
@@ -112,8 +114,7 @@ Install Flashplayer:
 
 Installing Hadoop:
 	Adding a dedicated Hadoop system user:
-		sudo addgroup hadoop
-		sudo adduser --ingroup hadoop hduser
+		sudo addgroup hadoop; sudo adduser --ingroup hadoop hduser
 	Download from apache.org:
 		Hadoop
 		Pig
@@ -122,4 +123,35 @@ Installing Hadoop:
 		Sqoop
 		Flume
 		Oozie
-	
+	unzip and tar xvf all the downloaded jars
+	move the untarred folders to /usr/local/bigdata
+	edit .bashrc file to add below:
+	################
+	# Set Hadoop-related environment variables
+		export HADOOP_HOME=/usr/local/hadoop
+
+		# Set JAVA_HOME (we will also configure JAVA_HOME directly for Hadoop later on)
+		export JAVA_HOME=/usr/lib/jvm/java-6-sun
+
+		# Some convenient aliases and functions for running Hadoop-related commands
+		unalias fs &> /dev/null
+		alias fs="hadoop fs"
+		unalias hls &> /dev/null
+		alias hls="fs -ls"
+
+		# If you have LZO compression enabled in your Hadoop cluster and
+		# compress job outputs with LZOP (not covered in this tutorial):
+		# Conveniently inspect an LZOP compressed file from the command
+		# line; run via:
+		#
+		# $ lzohead /hdfs/path/to/lzop/compressed/file.lzo
+		#
+		# Requires installed 'lzop' command.
+		#
+		lzohead () {
+		    hadoop fs -cat $1 | lzop -dc | head -1000 | less
+		}
+
+		# Add Hadoop bin/ directory to PATH
+		export PATH=$PATH:$HADOOP_HOME/bin
+	####################
