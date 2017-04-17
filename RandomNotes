@@ -1,1 +1,2 @@
-test
+ScatterPlot: How to Choose the axes:
+Any x-y scatter plot is relevant only to the end user (pretty much what whuber said). In general, the x-axis is the variable (cause) and the y-axis is the response (effect). In your case, I would suggest that literacy is a variable that affects baby mortality, so I would put literacy on the X and mortality on the Y. Imagine the simple equation y = 10x. x is the variable, y is the result.
