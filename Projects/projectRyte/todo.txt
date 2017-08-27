@@ -1,0 +1,35 @@
+Task List
+1. Event definition allows multiple dependency. - Manan
+
+one-to-many... (back side links) -- done
+
+2. Calculation of dates and launching the project and copying data from event definition 
+and project definition to event and project - Manan 
+
+3. Store business flow from project if project created without business flow - Manan
+
+4. Task completion flow and adding users to events - Surya
+
+5. Upload documents to document management screen with history and creating soft link to document
+from project definition and project - Surya
+
+6. User management screen with role and user management - Surya
+
+7. Displaying previous tidbits while user working on event - Surya/Manan
+Fields to display Custom fields, Time frame, documents
+
+8. put svn on aws - ami -- done
+
+9. Create a soft link between user and document
+
+10. Allow Business flows to have documents(ex: templates)
+
+11.Tie project to Customer
+
+12. Visual calendar for running projects - Outsource
+
+13. Scheduler - continous monitoring - Manan
+
+14. Cancel Github and register projectryte.com - Manan
+
+15. projectryte.war == ui.war

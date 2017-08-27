@@ -1,0 +1,23 @@
+UI
+-->login screen
+place to enter userId& password. need a submit button and  a forgot password link.
+
+-->homepage--random feeds (or) recently added feeds (or) frequently visited feeds
+this is the landing page. Upon successful authentication, the user lands here.
+so what else would be a better place to enter the site than the place which holds your history.
+this way user feels more familiar with the site.
+Clicking on any subscriptions will take to the subscriptions page and anchor on the selected subscription.
+later, probably V2, we can take the preferences and feeds of the user and make sense out of them so that there is a 
+suggestion engine too.
+
+-->user profile page--update profile--add subscription urls
+User profile is a place where the regular boiler plate profile management stuff takes place.
+How about updating display name , change password for now. 
+Going forward, V2 ??, may be customize landing page out of here and view styles i.e list, icon view of the subscriptions.
+How about also linking to subscriptions page from here , V2??
+ 
+-->subscriptions page--layout -> list on the left with preview on right (or) ....?
+The curry of the site. 
+This is the place where the user spends most of his time. so need to use the real estate really well.
+Need to think where we place the list of subscriptions.
+Need to think about the preview of the article as well as full article piece.

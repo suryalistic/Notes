@@ -1,0 +1,16 @@
+goto: aws.amazon.com
+login as : projectryte@gmail.com/projectryte01 (same creds for gmail account.)
+
+ec2 project ryte mysql root pass: projectryte01
+
+after installation of mysql, optionally do a "mysql_secure_installation" to lock it down from access from remote clients.
+
+ssh, scp to aws:
+
+scp -i ~/.ssh/ec2/projectryte.pem CreateSchema.sql ubuntu@ec2-23-20-24-135.compute-1.amazonaws.com:~/
+
+Ubuntu install and access:
+Install ubuntu by selecting and AMI,
+After install the default user is 'ubuntu' for ssh access to ami instance.
+to access thru ssh, need a *.pem file. this is generated only once and need to kept in a safe place.
+add this .pem file to .ssh directory for key setup.

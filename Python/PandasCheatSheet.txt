@@ -1,0 +1,117 @@
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#Magic Functions:    https://github.com/lmmx/devnotes/wiki/IPython-'magic'-function-documentation
+#Pandas videos:      https://www.youtube.com/playlist?list=PL5-da3qGB5ICCsgW1MxlZ0Hq8LL5U3u9y
+#pandas videos data: https://github.com/justmarkham/pandas-videos/tree/master/data
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+#Cheat Sheet
+
+#import sys
+#reload(sys)
+#sys.setdefaultencoding('utf-8')
+#http://continuum.io/downloads
+
+#len(df)       series + value    df[df.c == value]
+#df.head()     series + series2  df[(df.c >= value) & (df.d < value)]
+#df.tail()     series.notnull()  df[(df.c < value) | (df.d != value)]
+#df.COLUMN     series.isnull()   df.sort('column')
+#df['COLUMN']  series.order()    df.sort(['column1', 'column2'])
+#len(df)       series + value    df[df.c == value]
+#df.head()     series + series2  df[(df.c >= value) & (df.d < value)]
+#df.tail()     series.notnull()  df[(df.c < value) | (df.d != value)]
+#df.COLUMN     series.isnull()   df.sort('column')
+#df['COLUMN']  series.order()    df.sort(['column1', 'column2'])
+
+#s.str.len()        s.value_counts() df[['column1', 'column2']]
+#s.str.contains()   s.sort_index() df.plot(x='a', y='b', kind='scatter')
+#s.str.startswith() s.plot(...)      df.plot(x='a', y='b', kind='bar')
+
+#len(df)       series + value    df[df.c == value]
+#df.head()     series + series2  df[(df.c >= value) & (df.d < value)]
+#df.tail()     series.notnull()  df[(df.c < value) | (df.d != value)]
+#df.COLUMN     series.isnull()   df.sort('column')
+#df['COLUMN']  series.order()    df.sort(['column1', 'column2'])
+
+#s.str.len()        s.value_counts()
+#s.str.contains()   s.sort_index()   df[['column1', 'column2']]
+#s.str.startswith() s.plot(...)      df.plot(x='a', y='b', kind='bar')
+
+#df.set_index('a').sort_index()        df.loc['value']
+#df.set_index(['a', 'b']).sort_index() df.loc[('v','u')]
+#df.groupby('column')                  .size() .mean() .min() .max()
+#df.groupby(['column1', 'column2'])    .agg(['min', 'max'])
+
+#len(df)       series + value    df[df.c == value]
+#df.head()     series + series2  df[(df.c >= value) & (df.d < value)]
+#df.tail()     series.notnull()  df[(df.c < value) | (df.d != value)]
+#df.COLUMN     series.isnull()   df.sort('column')
+#df['COLUMN']  series.order()    df.sort(['column1', 'column2'])
+
+#s.str.len()        s.value_counts()
+#s.str.contains()   s.sort_index()   df[['column1', 'column2']]
+#s.str.startswith() s.plot(...)      df.plot(x='a', y='b', kind='bar')
+
+#df.set_index('a').sort_index()        df.loc['value']
+#df.set_index(['a', 'b']).sort_index() df.loc[('v','u')]
+#df.groupby('column')                  .size() .mean() .min() .max()
+#df.groupby(['column1', 'column2'])    .agg(['min', 'max'])
+
+#df.unstack() 	df.stack()  df.fillna(value)   s.fillna(value)
+
+#len(df)       series + value    df[df.c == value]
+#df.head()     series + series2  df[(df.c >= value) & (df.d < value)]
+#df.tail()     series.notnull()  df[(df.c < value) | (df.d != value)]
+#df.COLUMN     series.isnull()   df.sort('column')
+#df['COLUMN']  series.order()    df.sort(['column1', 'column2'])
+
+#s.str.len()        s.value_counts()
+#s.str.contains()   s.sort_index()    df[['column1', 'column2']]
+#s.str.startswith() s.plot(...)       df.plot(x='a', y='b', kind='bar')
+
+#df.set_index('a').sort_index()        df.loc['value']
+#df.set_index(['a', 'b']).sort_index() df.loc[('v','u')]
+#df.groupby('column')                  .size() .mean() .min() .max()
+#df.groupby(['column1', 'column2'])    .agg(['min', 'max'])
+
+#df.unstack()      s.dt.year
+#df.stack()        s.dt.month
+#df.fillna(value)  s.dt.day
+#s.fillna(value)   s.dt.dayofweek
+
+#len(df)       series + value    df[df.c == value]
+#df.head()     series + series2  df[(df.c >= value) & (df.d < value)]
+#df.tail()     series.notnull()  df[(df.c < value) | (df.d != value)]
+#df.COLUMN     series.isnull()   df.sort('column')
+#df['COLUMN']  series.order()    df.sort(['column1', 'column2'])
+
+#s.str.len()        s.value_counts()
+#s.str.contains()   s.sort_index()    df[['column1', 'column2']]
+#s.str.startswith() s.plot(...)       df.plot(x='a', y='b', kind='bar')
+
+#df.set_index('a').sort_index()        df.loc['value']
+#df.set_index(['a', 'b']).sort_index() df.loc[('v','u')]
+#df.groupby('column')                  .size() .mean() .min() .max()
+#df.groupby(['column1', 'column2'])    .agg(['min', 'max'])
+
+#df.unstack()      s.dt.year       df.merge(df2, how='outer', ...)
+#df.stack()        s.dt.month      df.rename(columns={'a': 'y', 'b': 'z'})
+#df.fillna(value)  s.dt.day        pd.concat([df1, df2])
+#s.fillna(value)   s.dt.dayofweek
+
+
+
+
+#dataframe similar to a table of data
+#two data structures : dataframe and series
+#series = columns
+#labels or indexes   = rows
+#axis=0 or 'index'   => Rows
+#axis=1 or 'columns' => Columns
+#logical and => &
+#logical or => |
+#index on data frame is used for ALIGNMENT,SELECTION and IDENTIFICATION
+#simpler datatypes as index is better. integer better than float better than string
+#technically, there are two indexes on a dataframe: 
+#    1.the row index with methods like set_index and reset_index to change and reset the indices
+#    2.the column index with methods like the unstack(position) and stack() to change and reset the indices 

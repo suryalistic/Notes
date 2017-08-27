@@ -1,0 +1,11 @@
+IBM was installation:
+1.Download the installation manager from here: https://developer.ibm.com/wasdev/downloads/#asset/WAS_traditional_for_Developers  .... (may have to create websphere id: suryalistic@gmail.com/krishna01)
+2.install the installation manager by running the sudo ./install from the unzip directory
+3.after installation manager is installed, File > Preferences > Repositories > Add repository.
+4.add: https://www.ibm.com/software/repositorymanager/V85WASDeveloperILAN. if prompted for userid/pass use the above or your created IBM id.
+5. save and go to install manager home
+6. click install and select the repository
+7.select websphere 8.5 to be installed.
+8.wait for the download and install to complete.
+9.launch profile management tool to create a application server profile.
+10.create application server profile and verify.

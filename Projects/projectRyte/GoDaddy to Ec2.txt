@@ -1,0 +1,26 @@
+DNS to EC2:
+----------
+
+First, you need an "Elastic IP" address from Amazon, which is basically a static IP. You can use the ec2-allocate-address command to get one, and then you can associate it with one of your EC2 instances.
+
+For the details, see: http://aws.amazon.com/articles/1346?_encoding=UTF8&jiveRedirect=1
+
+Note that you have to pay ($0.01/hr) for elastic IP addresses that aren't associated with a running instance.
+
+Next, you use Godaddy (or any DNS service) to associate the host name you want with your static IP. This is done with an "A" (for "address") record. See this help page on Godaddy to set up A records: http://help.godaddy.com/article/680#arecs
+
+Finally, you may need to wait some time (few minutes to an hour) for it all to propagate through. You can test it all by pinging your hostname.
+
+
+------------------------------------------
+
+tomcat6:
+webapps folder : /var/lib/tomcat6/webapps
+start/stop/restart: switch to root user : sudo su
+ /etc/init.d/tomcat6 restart/stop/start
+
+change port from 8080 to 80
+sudo /sbin/iptables -t nat -I PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080
+sudo /sbin/iptables-save 
+
+--------------------------------------------------

@@ -1,0 +1,10 @@
+#Best practice to create a virtual environment for each python project
+1. From main python installation: python3 install virtualenv
+2. from inside the project folder (project-> main folder with all files and sub-folders): python -m venv name-of-virtual-env
+2.a. after step 2, do this from the main directory where name-of-virtual-env main folder is : source name-of-virtual-env/name-of-virtual-env/bin/activate
+3. check the name-of-virtual-env folder for bin, lib, pip, python3 inside the bin etc.
+4. install new packages using the name-of-virtual-env/bin/pip3 for localized installation.
+5. Use pip3 freeze to prepare requirements.txt (pip3 freeze > requirements.txt)
+6. project requirements can be easily installed on other virtual environments or boxes with the requirements.txt file using pip3 in the virtual env: name-of-virtual-env/bin/pip3 install -r requirements.txt
+7. activate virtual environment using source name-of-virtual-env/bin/activate
+8. deactivate using "deactivate". should be found in the folder on the same level as virtual environment.

@@ -13,6 +13,12 @@ Add a new VirtualVm instance:
 8.If Os in VM does not open in full screen, need to install the Guest tools. goto devices -> insert guest additions image-> open terminal-> sudo ./VBoxLinuxAdditions.run
 9.Install any required security updates.
 
+************************** guest additions installation ************************
+sudo apt-get install virtualbox-guest-dkms
+********************************************************************************
+************************* extensions package ***********************************
+get extensions package version matching the virtualbox version from here:http://download.virtualbox.org/virtualbox/  and install
+********************************************************************************
 
 
 Installation of Java
@@ -103,6 +109,11 @@ Install Other utilities:
 	open-ssh: sudo apt-get install openssh-server openssh-client  ; sudo /etc/init.d/ssh restart
 	Chrome browser: sudo apt-get install chromium-browser
 	tomcat7: sudo apt-get install tomcat7 ; after install add JAVA_HOME to /etc/default/tomcat7
+	
+Install python:
+	sudo add-apt-repository ppa:fkrull/deadsnakes
+	sudo apt-get update
+	sudo apt-get install python2.7
 
 Install Flashplayer:
 	For 14.10 version

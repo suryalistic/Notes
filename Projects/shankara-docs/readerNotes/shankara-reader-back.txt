@@ -1,0 +1,13 @@
+Back & Middle
+
+Back:
+-->Tables
+User table
+subscription table - related to - User table
+(Preferences table - related to - User table )
+(state of the subscriptions - related t0 - User table): this table should store the number of unread items etc.
+
+-->interface
+This layer is the interface between feeds in db, reading feeds from sites and also updating db.
+Handle landing page with most visited feeds, recently added feeds
+maintain state, update un-read and read feeds and update db accordingly.

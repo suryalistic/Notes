@@ -1,0 +1,131 @@
+installation:
+install homebrew if not already installed  (package manager for osx):
+	/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+	* latest on https://brew.sh/
+	
+=================
+Use brew to install python3 and pip3
+	brew install python3
+	* this usually installs python3 and pip3 
+check installation with : which python3 pip3
+==================
+
+use pip3 to install other packages and modules 
+	eg: pip3 install requests
+=================
+pandas = data analysis tool for python
+pip3 install pandas
+*if installation unsuccesful, download pre-compiled numpy and pandas and install using pip3: pip3 install "name of the .whl file"
+
+Jupyter notebook: shell + editor: pip3 install jupyter 
+
+	
+============
+(dataframe).loc => labels for column names, row indexes
+(dataframe).liloc => numbers for rows, columns. the outer bound of range is not inclusive
+(dataframe).ix => combination of labels and numbers. if column is specified as integer range, outer bound is exclusive
+==============
+
+
+(dataframe).drop(superDf.index[0:3],0) ==> rows (2nd param is 0)
+(dataframe).drop(superDf.columns[0:3],1) ==> rows (2nd param is 1)
+
+========================
+
+***** REvisit geoCoding ***
+Here : https://www.udemy.com/the-python-mega-course/learn/v4/t/lecture/5163258?start=0
+Also, see lambda:
+http://stackoverflow.com/questions/890128/why-are-python-lambdas-useful/890188#890188
+***************************
+
+*************************************************************
+Image processing OPENCV:
+	load faarcascade with cv2.CascadeClassifier('name.xml')
+	read image with cv2
+	good practice to convert to gray scale with cv2: cvtColor(image,cv2.<OPTIONS>)
+	detect with proper scale and neighnorhood with cv2:detectMultiScale(image,scaleFactor,minNeighbors), gives faces object.
+	draw rectangle on recognition if needed using cv2 rectangle with co-ordinates from faces (x,y,w,h)
+	show image with cv2:imshow,waitKey(),destroyAllWindows()
+	
+**************************************************************
+
+Capturing Video:
+	capture vider using cv2: CaptureVideo(<cam number 0, 1,2 etc>), returns video numpy array.
+	video numpy array has check boolean and frame.
+	frame is the captured frame from video
+	you can read the framew with cv2, imshow it or cascadeclassfy it for motion detection
+	release video from video numpy array
+	
+**************************************************************
+bokeh plotting:
+	install bokeh with pip3.
+	usage:
+		three ways: 
+			bokeh.models
+			boken.plotting
+			bokeh.charts
+		can take data from a dataframe.
+		output_file available on all three models.  creates an output file in the current directory, use "show" also availanle in all three to display the chart.
+		refer to http://bokeh.pydata.org/en/latest/docs/gallery.html for more ideas
+		hoverTools are available in bokeh.model. build a HoverTool with tooltips and add it to the plot usign add_tools
+		
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+

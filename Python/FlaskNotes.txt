@@ -1,0 +1,41 @@
+build html, css
+flask architecture
+create database postgre sql
+store data in db
+retrieve data from db, calculate
+send email
+deploy application to heroku
+
+
+
+with flask applications:
+	.html files in  templates folder
+	.js, css files in static folder
+	.url_for() parameter is the name of the method with the app.route() annotation
+	
+** use virtualenv to create virtual environment >>> python3 -m virtualenv <name_for_env>; to activate that venv >>>source <path_to_virtual_bin>/activate; test by doing which pip3; exit/deactivate/come-out by typing deactivate in active terminal
+
+to deploy login to heroku: heroku login
+create app: heroku create <app-name>
+create hobby database: heroku addons:heroku-postgresql:hobby-db --app <app-name- from previous step>
+
+
+
+
++++++++++++++++++++++++++++++++++++++++++
+1.git init on the project folder
+2, create app on heroku
+2.install db: heroku addons:create heroku-postgresql:hobby-dev --app <app-name- from previous step>
+use heroku config --app <name of app> to find db name. put the name in the python file (add ?sslmode=require at end of url for secured)
+3.install gunicorn
+6.create requirements file from pip3 freeze
+7.create Procfile with web: gunicorn app:app
+8.create runtime.txt with python-3.5.1
+9.create .gitignore file for ignoring the virtual folder. list folder names and file names in there
+10.git add
+11.git commit
+12.connect heroku app to this git, heroku git:remote --app <name of the app>
+13.git push to heroku master
+14. open python session on heroku, heroku run python3, from <script> import db
+15.run psql from the command line after heroku login, heroku pg:psql --app <name of the app>
+16. if there is an error creating database from command line or executing python script, create through the heroku online
