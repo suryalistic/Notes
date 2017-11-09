@@ -1,0 +1,115 @@
+Disaster REcovery: is baked into our architecture/SLA. data backups to cloudera. OLTP system with most current 6 months data. DSS with upto 2 year old data (also serves reporting). main data store with big data/cloudera
+
+Defensive Coding: 	we stress this on code reviews
+					using constants on the left side of check (prevent null pointer)
+					always use braces even if there is one statement
+					use enums or properties instead of String values.
+					unit testing. TEst first whenever possible
+					
+Java Performance best practices:
+					use stringbuilder
+					use stack and primitives
+					cache regular expressions
+					implement hashcode avoid equals
+12 factors:
+		I. Codebase
+			One codebase tracked in revision control, many deploys
+		II. Dependencies
+			Explicitly declare and isolate dependencies
+		III. Config
+			Store config in the environment
+		IV. Backing services
+			Treat backing services as attached resources
+		V. Build, release, run
+			Strictly separate build and run stages
+		VI. Processes
+			Execute the app as one or more stateless processes
+		VII. Port binding
+			Export services via port binding
+		VIII. Concurrency
+			Scale out via the process model
+		IX. Disposability
+			Maximize robustness with fast startup and graceful shutdown
+		X. Dev/prod parity
+			Keep development, staging, and production as similar as possible
+		XI. Logs
+			Treat logs as event streams
+		XII. Admin processes
+			Run admin/management tasks as one-off processes
+		
+SEMAPHORE in java is used for obtaining lock on the object to perform a synchronized function.	
+			
+Java7:
+	Diamond operator
+	String in switch
+	advanced try to close streams
+	numeric literals with underscores 1_000
+
+Map<String, Object> req_ctx = ((BindingProvider)port).getRequestContext();
+req_ctx.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, WS_URL);
+Map<String, List<String>> headers = new HashMap<String, List<String>>();
+headers.put("Username", Collections.singletonList("mkyong"));
+headers.put("Password", Collections.singletonList("password"));
+req_ctx.put(MessageContext.HTTP_REQUEST_HEADERS, headers);
+
+
+REST:
+
+Both PUT and POST can be used for creating.
+
+You have to ask "what are you performing the action to?" to distinguish what you should be using. Let's assume you're designing an API for asking questions. If you want to use POST then you would do that to a list of questions. If you want to use PUT then you would do that to a particular question.
+
+Great both can be used, so which one should I use in my RESTful design:
+
+You do not need to support both PUT and POST.
+
+Which is used is left up to you. But just remember to use the right one depending on what object you are referencing in the request.
+
+Some considerations:
+
+Do you name your URL objects you create explicitly, or let the server decide? If you name them then use PUT. If you let the server decide then use POST.
+PUT is idempotent, so if you PUT an object twice, it has no effect. This is a nice property, so I would use PUT when possible.
+You can update or create a resource with PUT with the same object URL
+With POST you can have 2 requests coming in at the same time making modifications to a URL, and they may update different parts of the object.
+
+
+
+
+
+
+
+Jython:
+	Compile:
+		from javax.tools import (ForwardingJavaFileManager, ToolProvider, DiagnosticCollector,)
+		names = ["HelloWorld.java"]
+		compiler = ToolProvider.getSystemJavaCompiler()
+		diagnostics = DiagnosticCollector()
+		manager = compiler.getStandardFileManager(diagnostics, none, none)
+		units = manager.getJavaFileObjectsFromStrings(names)
+		comp_task = compiler.getTask(none, manager, diagnostics, none, none, units)
+		success = comp_task.call()
+		manager.close()
+	
+	WEbsphere:
+		AdminApplication for was services
+	
+	autojenkins to connect to jenkins:
+		jenkins = Jenkins('http://jenkins', auth=('user', 'pass'))
+	
+
+TODO: Python, our jython scripts, executor framework, design patterns
+
+
+
+
+Yes Java HashMap provides in-built hash collision detection and resolution.
+If the Key is present in Map then it will be replaced.
+If the Key is not present in Map then it will increment the modCount(number of times this HashMap has been structurally modified) and place new entry using addEntry() method(Java 7). 
+
+Java 7 had collision resolution strategy as Linked List which has worst case time complexity of O(n). 
+
+As of Java 8 collision resolution strategy is improved to Balanced Trees which has worst time complexity of O(log n).
+
+References:
+put(K, V) of Java 7 HashMap - java.util.HashMap (.java) - GrepCode Class Source
+put(K, V) of Java 8 http://grepcode.com/file/reposit...

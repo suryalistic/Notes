@@ -1,0 +1,30 @@
+AspectJ: explain the syntax of regular expression @Before(execution)
+AspectJ: show transaction using AOP
+HIbernate: show exapmle of entityManager. what is it
+Spring mvc: how multiple view resolvers work. 
+General: where are the projects?
+
+security: http:auto-config=false example
+security: do we also create authorities table along with users table?
+
+==========
+
+what, when -> advice
+where -> joinpoint : one method execution, pointcut: multiple method executions (thru regexes)
+
+@Aspect
+class loggingAdvice(){
+
+	@Before("* execution(edu.com.test.*.(..))")
+	public void logmessage(){
+	
+	//do something
+	}
+
+}
+
+what  ->  method : logmessage
+when  ->  @Before
+where ->  ("* execution(edu.com.test.*.(..))")
+
+the whole class is the aspect

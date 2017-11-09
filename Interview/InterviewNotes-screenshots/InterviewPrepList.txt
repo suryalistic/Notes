@@ -1,0 +1,6 @@
+CoreJava (basics, collections, internals, new features, design patterns)
+Testing(Unit, frameworks)
+web (Spring, UI, protocols, soap, rest,Server, CI/CD, security) 
+Databases(RDBMS concepts, SQL, NOSQL)
+Scripting(Python, javascript)
+Cloud(Salesforce, AWS, Docker)

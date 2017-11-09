@@ -1,0 +1,173 @@
+####################################################################################################
+######################################## SUMMARY ###################################################
+####################################################################################################
+
+Important Modules:
+******************************
+Messaging
+Desktop & App Streaming
+Security & Identity
+Management Tools
+Storage
+Databases
+Network & Content Delivery
+Compute
+AWS Global infrastructure
+******************************
+##################################################		
+AWS global infrastructure:
+Region: 			geographical area
+Availability zones: Datacenters within the region
+Edge Locations:		CDN endpoint for cloudfront (Cache for media objects)
+
+more edge locations than regions.
+services depend on regions. not all services in all regions. change region to get a service.
+closer region, closer edge location => lesser latency.
+
+##################################################		
+Network and Content Delivery:
+VPC: virtual provate cloud. (virtual data center).A Virtual Private Cloud (VPC) is a virtual network dedicated to a single AWS account. It is logically isolated from other virtual networks in the 				 AWS cloud, providing compute resources with security and robust networking functionality.
+Route53: DNS service. domain name provider/registrar. match name to ip address. port 53 is the dns port.
+Cloud front: collection of edge locations
+Direct Connect: connect physical locations to AWS . direct connection. 
+
+##################################################	
+Compute:
+EC2: elastic coud comptute. virtual machines on cloud. has access to underlying system (OS etc).
+EC2 container service: container manager service. run docker container services. 
+Elastic bean stalk: deploy code to ebs. uplokad code and the ebs provides infrastructure. 
+Lambda: unlike ec2. serverless. upload code and it will respond to urls. echo is good ex. 
+Lightsail: out of box cloud. deploy joomla site etc.
+##################################################		
+Storage:
+S3: simple  storage service. virtyal disk on cloud. store files word docs. dont install games, db etc. used to put objects. drop box.
+Glacier: archive from s3. mostly audit. retrieve takes time 4- 5 hours. low cost
+EFS: elastic file service. stores files. install db and apps. can share with mulitple VMs.
+Storage Gateway: connect s3 to on-premise data center. 
+##################################################		
+Databases:
+RDS: relational database service. contains mysql, oracle, mariadb, aurora. 
+DynamoDB: nonrelational db. NoSQL. really scalable. 
+Redshift: datawarehouse. bigData. run reports.
+Elasticcache: caching data on cloud. eg: top 10 selling items.
+##################################################		
+Migration:
+Snowball: started as import/export. move data to clloud (S3, EFS).Snowball is a petabyte-scale data transport solution that uses secure appliances to transfer large amounts of data into and out of the AWS cloud. 
+DMS: db migration service. migrate inhouse db to cloud. uses replication.
+SMS: server migration services. migrates VMware virtual machines to cloud. can do 50 at a time.
+##################################################
+Analytics:
+Athena:run sql queries on S3. esentially turning flat files to databases.
+EMR: elastic map reduce. process large data. uses hadoop.Amazon EMR is a web service that makes it easy to process large amounts of data efficiently.
+Cloud Search: search engine for website. providedd by Aws
+Elastic Search similar to cloud search. provided by third party. a good alternative to AWS is angolia.
+Kinesis:  streaming and analysing large data. run realtime analysis on data
+Data pipeline: service to move data from services.. eg: s3 to dynamodb
+QuickSight:create visualizations on dashboards.that will aggregate your data from multiple data sources (S3, DynamoDB, RDS, etc.) and provide business intelligence based on this data
+##################################################
+Management tools:
+CloudWatch: used to monitor performance. disk utils. ram util etc
+*cloud formation: turn infrastructure to code. load balancer etc. describe the template and deploy. 
+Cloud trial: audit trail. 
+opsworks: aitimate deployments using chef
+config: monitor env. audit env. can set alerts.
+service catalog: authorized services for org. 
+trusted advisor: give tips on perf opt. automated tips for optimizing env.An online resource to help you reduce cost, increase performance, and improve security by optimizing your AWS environment, Trusted Advisor provides real time guidance to help you provision your resources following AWS best practices
+##################################################
+Application Services:
+Step Functions: visualizing services in application
+SWF: simple workflow service. used in amazon fulfilment centers. way to coordinate tasks. 
+API Gateway: gateway to create, publish and access api. eg: angular ui -> api on lambda functions.
+App Stream: streaming desktop apps to users
+elastic transcoder: changes videos to fit devices. format, resolution etc.
+##################################################		
+Developer Tools:
+CodeCommit: github on aws. open or close
+codebuild: compile code. pay by minute
+Codedeploy: deploying code to ec2
+Codepipeline: version of codes in different environments.
+
+##################################################	
+Messaging:
+
+##################################################	
+Mobile Services:
+MobileHub: add,design and configure features amobile app. ui, backedn, analytics etc.
+Cognito: signup and  signin to mobile app. uses s3, dynamodb
+Device Farm: testing mobile apps. 100s of real devices. 
+mobile abalytics: collect and analyze data
+pinpoint: collect data on what users are doing realtime. notifications. google analytics + targeted marketing
+
+##################################################	
+Business Productivity:
+workdocs:storing docs on s3 
+workmail:send and rcv emails
+##################################################	
+IOT:
+IOT: connect the devices 
+ 
+##################################################	
+Desktop and app Streaming:
+workspaces: VDI. desktop on cloud. thin client connects to aws 
+appstream: streamimng desktop app to users
+
+##################################################	
+AI:
+alexa: amazons voice service. talking to lambda. lex is what drives alexa
+polly: amazons text to voice service. inside alexa. 
+machince learning: give aws dataset (age, sex, married etc.). can predict based on this data. predict behavior based on previous preformance
+rekognition: upload a pic and recognises the contents of pic.
+
+##################################################
+Messaging:
+SNS: simple notification service. email or txt msg. helps system administrators receive notification of specified events affecting your AWS environment (such as alarms, etc.)
+SQS: simple queue system. queue system. hellps de-couple modules.
+SES: simple email service. 
+##################################################
+Security&IDentity:
+IAM: 
+Manage users and level of Access to AWS console (Authentication and Authorization) . central control to AWS. shared acces.granular permissions.work with AD, Facebook login, linkedin, Google etc 
+.multi-factor auth (ex: 2 factor).provide temp access.
+setup pwd rotation policy
+integrate AWS services
+User: 		End users
+Groups: 	collection of users with same permissions
+Role: 		access to AWS resources
+Profile: 	Document to define one or more permissions (to users, groups, roles)
+
+Inspector: install on VM. monitor sercice
+Certificate manager: free SSL cert for the domain
+Directory Service: use AD. connect AD to AWS
+WAF: web app firewall. app level security. 
+Artifacts: get documents for security. compliance dicuments.
+
+
+
+####################################################################################################
+#########################################   DETAIL  ################################################
+####################################################################################################
+IAM:
+manage users and level of access to aws.
+centralized control. shared acces. granular permission. identity federation. multifactor auth. provide temp access to users/ devices. pwd rotation policy. PCI DSS compliance
+
+users: end users
+Groups: collection of ppl for one or more permissions
+role:create and assign to users/groups
+policies: doc that defines one or more permissions
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

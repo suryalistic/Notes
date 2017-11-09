@@ -1,0 +1,16 @@
+Javascript:
+	#3 types of for: 
+		for(var i =0;i>< arr.length;i++)
+		for(var ind in arr) : this iterates the indexes of array or the property key in JSON
+		for(var val of arr) : this iterates the values of the array or the property value of JSON.
+		for(;;) :infinite loop
+		
+		#array functions:
+			array.sort()
+			array.reverse()
+			array.sort()/reverse()
+			array.indexOf("element") will return -1 if not found
+			array.indexOF(startposition,"element")
+			array.lastindexOf("") will give last occurence.
+			array.slice(fromposition, endPosotionExclusive) does not affect original array
+			array.splice)()	affects orig array		

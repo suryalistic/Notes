@@ -1,2 +1,0 @@
-# Noteses
-All my notes

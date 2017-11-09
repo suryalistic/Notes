@@ -166,3 +166,99 @@ Installing Hadoop:
 		# Add Hadoop bin/ directory to PATH
 		export PATH=$PATH:$HADOOP_HOME/bin
 	####################
+	
+	
+	
+	while installing tomcat for eclipse. if conf error:
+	
+	
+	cd /usr/share/tomcat7
+sudo ln -s /var/lib/tomcat7/conf conf
+sudo ln -s /var/log/tomcat7 log
+sudo ln -s /etc/tomcat7/policy.d/03catalina.policy conf/catalina.policy
+sudo chmod -R a+rwx /usr/share/tomcat7/conf
+
+
+################## Load file problem in mysql ####################
+Ubuntu Linux: Disable Apparmor For Specific Profile / Service Such As Mysqld Server
+Posted on November 20, 2012in Categories Security, Suse, Ubuntu Linux last updated November 20, 2012
+AppArmor (“Application Armor”) is a security module for the Linux kernel and integrated into both kernel and Ubuntu Linux. How do I disable AppArmor protection for mysql profile / service under Ubuntu or Novell Suse Enterprise Linux?
+
+
+Use the apparmor_status or aa-status command to see various information about the current AppArmor policy. Type the following command as root user or use it via sudo command:
+$ sudo apparmor_status
+
+OR
+
+$ sudo aa-status
+
+Sample outputs:
+
+apparmor module is loaded.
+6 profiles are loaded.
+6 profiles are in enforce mode.
+   /sbin/dhclient
+   /usr/lib/NetworkManager/nm-dhcp-client.action
+   /usr/lib/connman/scripts/dhclient-script
+   /usr/sbin/mysqld
+   /usr/sbin/ntpd
+   /usr/sbin/tcpdump
+0 profiles are in complain mode.
+2 processes have profiles defined.
+2 processes are in enforce mode.
+   /usr/sbin/mysqld (27816) 
+   /usr/sbin/ntpd (31952) 
+0 processes are in complain mode.
+0 processes are unconfined but have a profile defined.
+You can also type the following command to see the list of the profiles currently loaded using /sys/kernel/security/apparmor/profiles file:
+$ cat /sys/kernel/security/apparmor/profiles
+
+Sample outputs:
+
+/sys/kernel/security/apparmor/profiles
+/usr/sbin/mysqld (enforce)
+/usr/sbin/tcpdump (enforce)
+/usr/sbin/ntpd (enforce)
+/usr/lib/connman/scripts/dhclient-script (enforce)
+/usr/lib/NetworkManager/nm-dhcp-client.action (enforce)
+/sbin/dhclient (enforce)
+All apparmor profiles are traditionally stored in files in /etc/apparmor.d/ directory under varous filenames.
+
+Commands to disable one profile
+
+The syntax is:
+
+sudo ln -s /etc/apparmor.d/{profile.name-here} /etc/apparmor.d/disable/
+sudo apparmor_parser -R /etc/apparmor.d/{profile.name-name-here}
+To disable a profile called mysql i.e. disable apparmore protection for mysql server, enter:
+
+sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/
+sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
+Verify that mysqld protection is disabled:
+sudo aa-status
+
+Sample outputs:
+
+apparmor module is loaded.
+5 profiles are loaded.
+5 profiles are in enforce mode.
+   /sbin/dhclient
+   /usr/lib/NetworkManager/nm-dhcp-client.action
+   /usr/lib/connman/scripts/dhclient-script
+   /usr/sbin/ntpd
+   /usr/sbin/tcpdump
+0 profiles are in complain mode.
+1 processes have profiles defined.
+1 processes are in enforce mode.
+   /usr/sbin/ntpd (31952) 
+0 processes are in complain mode.
+0 processes are unconfined but have a profile defined.
+How do I turn on (enable) apparmor protection for mysql again?
+
+Type the following commands:
+
+sudo rm /etc/apparmor.d/disable/usr.sbin.mysqld
+sudo apparmor_parser -r /etc/apparmor.d/usr.sbin.mysqld
+sudo aa-status
+
+
